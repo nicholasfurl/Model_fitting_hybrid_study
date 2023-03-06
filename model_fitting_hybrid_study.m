@@ -61,7 +61,7 @@ tic
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study'));
 cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study');
 
-study = 4;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing
+study = 2;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing
 subjective_vals = 1;           %Run models using subjective values (ratings) or objective values (prices)?
 check_params = 1;       %fit the same model that created the data and output estimated parameters
 make_est_model_data = 1;
@@ -75,12 +75,12 @@ log_or_not = 0; %I'm changing things so all simulated data is logged at point of
 do_models = [1 2 4 5 7 ];    %These are now what v2 called model identifiers - Applies at the moment to both make_model_data and check_params;
 % do_models = [1 ];    %These are now what v2 called model identifiers - Applies at the moment to both make_model_data and check_params;
 if use_file_for_plots ~=1;
-    comment = sprintf('out_hybridFull_fromRawData_Log%dvals%d',log_or_not,subjective_vals);     %The filename will already fill in basic parameters so only use special info for this.
+    comment = sprintf('out_hybridStudy%d_fromRawData_Log%dvals%d',study,log_or_not,subjective_vals);     %The filename will already fill in basic parameters so only use special info for this.
     %     comment = 'test';
 end;
 outpath = 'C:\matlab_files\fiance\parameter_recovery\outputs';
 payoff_scheme = 1;  %1 if continuous and 3-rank otherwise. This switch is only used for simulations from estimated params, when the payoff scheme wasn't specified before the param estimation stage
-filename_for_plots = 'C:\matlab_files\fiance\parameter_recovery\outputs\out_new_ll1_out_hybridFullVerification_Log0vals1_20232802.mat';
+filename_for_plots = 'C:\matlab_files\fiance\parameter_recovery\outputs\out_new_ll1_out_hybridFull_fromRawData_Log0vals1_20230303.mat';
 
 
 %These correspond to identifiers (not configured implementations like in v2) in the v3_sweep version
@@ -435,6 +435,10 @@ toc
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+
+
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [num_samples ranks] = generate_a_models_data_est(Generate_params);
 
@@ -712,7 +716,7 @@ elseif study == 2;  %full pilot
     data_folder = 'pilot_full';
     ratings_phase = 1;
     sequence_file_headers = {'ParticipantPrivateID','Correct','ScreenNumber','TrialNumber','price1a','price2a','price3a','price4a',	'price5a',	'price6a',	'price7a',	'price8a',	'price9a',	'price10a',	'price11a',	'price12a'};
-    option_chars = 1;
+    option_chars = 2;
     payoff_scheme = 1;
 elseif study == 3;  %baseline
     data_folder = 'baseline';
@@ -784,56 +788,64 @@ all_output = reshape( ...
     );
 
 %reformat strings with £ signs in cells to be doubles
-for trial = 1:size(sequence_data_concatenated,1);
+if option_chars ~= 2;   %if not full pilot (which already is in doubles for some reason.
     
-    if option_chars == 1;
+    for trial = 1:size(sequence_data_concatenated,1);
         
-        sequence_data_concatenated.Option1{trial} = str2double(sequence_data_concatenated.Option1{trial}(2:end));
-        sequence_data_concatenated.Option2{trial} = str2double(sequence_data_concatenated.Option2{trial}(2:end));
-        sequence_data_concatenated.Option3{trial} = str2double(sequence_data_concatenated.Option3{trial}(2:end));
-        sequence_data_concatenated.Option4{trial} = str2double(sequence_data_concatenated.Option4{trial}(2:end));
-        sequence_data_concatenated.Option5{trial} = str2double(sequence_data_concatenated.Option5{trial}(2:end));
-        sequence_data_concatenated.Option6{trial} = str2double(sequence_data_concatenated.Option6{trial}(2:end));
-        sequence_data_concatenated.Option7{trial} = str2double(sequence_data_concatenated.Option7{trial}(2:end));
-        sequence_data_concatenated.Option8{trial} = str2double(sequence_data_concatenated.Option8{trial}(2:end));
-        sequence_data_concatenated.Option9{trial} = str2double(sequence_data_concatenated.Option9{trial}(2:end));
-        sequence_data_concatenated.Option10{trial} = str2double(sequence_data_concatenated.Option10{trial}(2:end));
-        sequence_data_concatenated.Option11{trial} = str2double(sequence_data_concatenated.Option11{trial}(2:end));
-        sequence_data_concatenated.Option12{trial} = str2double(sequence_data_concatenated.Option12{trial}(2:end));
         
-    else
+        if option_chars == 1;
+            
+            sequence_data_concatenated.Option1{trial} = str2double(sequence_data_concatenated.Option1{trial}(2:end));
+            sequence_data_concatenated.Option2{trial} = str2double(sequence_data_concatenated.Option2{trial}(2:end));
+            sequence_data_concatenated.Option3{trial} = str2double(sequence_data_concatenated.Option3{trial}(2:end));
+            sequence_data_concatenated.Option4{trial} = str2double(sequence_data_concatenated.Option4{trial}(2:end));
+            sequence_data_concatenated.Option5{trial} = str2double(sequence_data_concatenated.Option5{trial}(2:end));
+            sequence_data_concatenated.Option6{trial} = str2double(sequence_data_concatenated.Option6{trial}(2:end));
+            sequence_data_concatenated.Option7{trial} = str2double(sequence_data_concatenated.Option7{trial}(2:end));
+            sequence_data_concatenated.Option8{trial} = str2double(sequence_data_concatenated.Option8{trial}(2:end));
+            sequence_data_concatenated.Option9{trial} = str2double(sequence_data_concatenated.Option9{trial}(2:end));
+            sequence_data_concatenated.Option10{trial} = str2double(sequence_data_concatenated.Option10{trial}(2:end));
+            sequence_data_concatenated.Option11{trial} = str2double(sequence_data_concatenated.Option11{trial}(2:end));
+            sequence_data_concatenated.Option12{trial} = str2double(sequence_data_concatenated.Option12{trial}(2:end));
+            
+            
+        else
+            
+            %Unless they're from full or full pilot conditions, which only have a £ imported, the option
+            %strings have hidden <strong> tags to consider
+            sequence_data_concatenated.Option1{trial} = str2double(sequence_data_concatenated.Option1{trial}(9:end-9));
+            sequence_data_concatenated.Option2{trial} = str2double(sequence_data_concatenated.Option2{trial}(9:end-9));
+            sequence_data_concatenated.Option3{trial} = str2double(sequence_data_concatenated.Option3{trial}(9:end-9));
+            sequence_data_concatenated.Option4{trial} = str2double(sequence_data_concatenated.Option4{trial}(9:end-9));
+            sequence_data_concatenated.Option5{trial} = str2double(sequence_data_concatenated.Option5{trial}(9:end-9));
+            sequence_data_concatenated.Option6{trial} = str2double(sequence_data_concatenated.Option6{trial}(9:end-9));
+            sequence_data_concatenated.Option7{trial} = str2double(sequence_data_concatenated.Option7{trial}(9:end-9));
+            sequence_data_concatenated.Option8{trial} = str2double(sequence_data_concatenated.Option8{trial}(9:end-9));
+            sequence_data_concatenated.Option9{trial} = str2double(sequence_data_concatenated.Option9{trial}(9:end-9));
+            sequence_data_concatenated.Option10{trial} = str2double(sequence_data_concatenated.Option10{trial}(9:end-9));
+            sequence_data_concatenated.Option11{trial} = str2double(sequence_data_concatenated.Option11{trial}(9:end-9));
+            sequence_data_concatenated.Option12{trial} = str2double(sequence_data_concatenated.Option12{trial}(9:end-9));
+            
+        end;    %how are option values formatted
         
-        %Unless they're from full or full pilot conditions, which only have a £ imported, the option
-        %strings have hidden <strong> tags to consider
-        sequence_data_concatenated.Option1{trial} = str2double(sequence_data_concatenated.Option1{trial}(9:end-9));
-        sequence_data_concatenated.Option2{trial} = str2double(sequence_data_concatenated.Option2{trial}(9:end-9));
-        sequence_data_concatenated.Option3{trial} = str2double(sequence_data_concatenated.Option3{trial}(9:end-9));
-        sequence_data_concatenated.Option4{trial} = str2double(sequence_data_concatenated.Option4{trial}(9:end-9));
-        sequence_data_concatenated.Option5{trial} = str2double(sequence_data_concatenated.Option5{trial}(9:end-9));
-        sequence_data_concatenated.Option6{trial} = str2double(sequence_data_concatenated.Option6{trial}(9:end-9));
-        sequence_data_concatenated.Option7{trial} = str2double(sequence_data_concatenated.Option7{trial}(9:end-9));
-        sequence_data_concatenated.Option8{trial} = str2double(sequence_data_concatenated.Option8{trial}(9:end-9));
-        sequence_data_concatenated.Option9{trial} = str2double(sequence_data_concatenated.Option9{trial}(9:end-9));
-        sequence_data_concatenated.Option10{trial} = str2double(sequence_data_concatenated.Option10{trial}(9:end-9));
-        sequence_data_concatenated.Option11{trial} = str2double(sequence_data_concatenated.Option11{trial}(9:end-9));
-        sequence_data_concatenated.Option12{trial} = str2double(sequence_data_concatenated.Option12{trial}(9:end-9));
         
-    end;    %how are option values formatted
+        
+    end;    %loop through trials
     
-end;    %loop through trials
-
-sequence_data_concatenated.Option1 = cell2mat(sequence_data_concatenated.Option1);
-sequence_data_concatenated.Option2 = cell2mat(sequence_data_concatenated.Option2);
-sequence_data_concatenated.Option3 = cell2mat(sequence_data_concatenated.Option3);
-sequence_data_concatenated.Option4 = cell2mat(sequence_data_concatenated.Option4);
-sequence_data_concatenated.Option5 = cell2mat(sequence_data_concatenated.Option5);
-sequence_data_concatenated.Option6 = cell2mat(sequence_data_concatenated.Option6);
-sequence_data_concatenated.Option7 = cell2mat(sequence_data_concatenated.Option7);
-sequence_data_concatenated.Option8 = cell2mat(sequence_data_concatenated.Option8);
-sequence_data_concatenated.Option9 = cell2mat(sequence_data_concatenated.Option9);
-sequence_data_concatenated.Option10 = cell2mat(sequence_data_concatenated.Option10);
-sequence_data_concatenated.Option11 = cell2mat(sequence_data_concatenated.Option11);
-sequence_data_concatenated.Option12 = cell2mat(sequence_data_concatenated.Option12);
+    sequence_data_concatenated.Option1 = cell2mat(sequence_data_concatenated.Option1);
+    sequence_data_concatenated.Option2 = cell2mat(sequence_data_concatenated.Option2);
+    sequence_data_concatenated.Option3 = cell2mat(sequence_data_concatenated.Option3);
+    sequence_data_concatenated.Option4 = cell2mat(sequence_data_concatenated.Option4);
+    sequence_data_concatenated.Option5 = cell2mat(sequence_data_concatenated.Option5);
+    sequence_data_concatenated.Option6 = cell2mat(sequence_data_concatenated.Option6);
+    sequence_data_concatenated.Option7 = cell2mat(sequence_data_concatenated.Option7);
+    sequence_data_concatenated.Option8 = cell2mat(sequence_data_concatenated.Option8);
+    sequence_data_concatenated.Option9 = cell2mat(sequence_data_concatenated.Option9);
+    sequence_data_concatenated.Option10 = cell2mat(sequence_data_concatenated.Option10);
+    sequence_data_concatenated.Option11 = cell2mat(sequence_data_concatenated.Option11);
+    sequence_data_concatenated.Option12 = cell2mat(sequence_data_concatenated.Option12);
+    
+end;    %if not full pilot and so requires formatting
 
 %Time to loop through and process subs and sequences with models
 subs = unique(sequence_data_concatenated.ParticipantPrivateID);
@@ -845,7 +857,7 @@ for subject = 1:num_subs
     
     %Get objective values for this subject
     array_Obj = table2array(sequence_data_concatenated(sequence_data_concatenated.ParticipantPrivateID==subs(subject),5:end));
-
+    
     %loop through and get io peformance for each sequence
     for sequence = 1:size(array_Obj,1);
         
@@ -884,12 +896,12 @@ for subject = 1:num_subs
             
             %normalise raw price distribution (need for the models later)
             temp_Obj_ratings = (((new_max-new_min)*(the_prices - old_min))/(old_max-old_min))+new_min;
-            temp_Obj_ratings = -(temp_Obj_ratings - 50) + 51;
+            temp_Obj_ratings = -(temp_Obj_ratings - 50) + 50;
             all_ratings(:,subject) = temp_Obj_ratings; %to be returned by function
             
             temp_Obj_vals = (((new_max-new_min)*(array_Obj(sequence,:) - old_min))/(old_max-old_min))+new_min;
-            temp_Obj_vals = -(temp_Obj_vals - 50) + 51;
-
+            temp_Obj_vals = -(temp_Obj_vals - 50) + 50;
+            
             seq_vals(sequence,:,subject) = temp_Obj_vals;   %to be returned by function
             
         end;    %objective or subjective values?
@@ -924,12 +936,12 @@ for sub = 1:Generate_params.num_subs;
         %         Generate_params.ratings( find(Generate_params.ratings == 0) ) = NaN;
         
         
-        means = log(Generate_params.ratings(:,sub));
-        means(find(means == -Inf)) = 0;
-        sigs = log(Generate_params.ratings(:,sub));
-        sigs(find(sigs == -Inf)) = 0;
-        vals = log(Generate_params.seq_vals(sequence,:,sub));
-        vals(find(vals == -Inf)) = 0;
+        means = log(Generate_params.ratings(:,sub)+1);
+        %         means(find(means == -Inf)) = 0;
+        sigs = log(Generate_params.ratings(:,sub)+1);
+        %         sigs(find(sigs == -Inf)) = 0;
+        vals = log(Generate_params.seq_vals(sequence,:,sub)+1);
+        %         vals(find(vals == -Inf)) = 0;
         
         prior.mu =  mean(means);
         prior.var = var(sigs);
@@ -977,8 +989,14 @@ for sub = 1:Generate_params.num_subs;
     
 end;    %sub loop
 
+% %add new io field to output struct
+% num_existing_models = size(Generate_params.model,2);
+% Generate_params.model(num_existing_models+1).name = 'Optimal';
+% Generate_params.model(num_existing_models+1).num_samples_est = samples;
+% Generate_params.model(num_existing_models+1).ranks_est = ranks;
+
 %add new io field to output struct
-num_existing_models = size(Generate_params.model,2);
+num_existing_models = Generate_params.num_models;
 Generate_params.model(num_existing_models+1).name = 'Optimal';
 Generate_params.model(num_existing_models+1).num_samples_est = samples;
 Generate_params.model(num_existing_models+1).ranks_est = ranks;

@@ -5,11 +5,11 @@ function hybrid_full_matlab_replication_fromScratch
 %results still be too high?
 
 %get ratings dataset (Note matlab deletes spaces from csv header names during read)
-ratings_data_temp = readtable('C:\matlab_files\jspych\fiance_hybrid\Economic-best-choice-task-aka-new-hybrid\pilot_analysis\hybrid_full_verification_data\data_exp_27661-v5_task-od16.csv');
+ratings_data_temp = readtable('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\full\rating_data_exp_27661-v5_task-od16.csv');
 ratings_data = ratings_data_temp(strcmp(ratings_data_temp.ZoneType,'response_slider_endValue'),{'ParticipantPrivateID','Response','phone_price'});
 
 %get phase 2 dataset
-phase2_temp = readtable('C:\matlab_files\jspych\fiance_hybrid\Economic-best-choice-task-aka-new-hybrid\pilot_analysis\hybrid_full_verification_data\data_exp_27661-v5_task-hlnk.csv');
+phase2_temp = readtable('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\full\data_exp_27661-v5_task-hlnk.csv');
 phase2_data = phase2_temp(phase2_temp.Correct==1,{'ParticipantPrivateID','Correct','ScreenNumber','TrialNumber','price1a','price2a','price3a','price4a',	'price5a',	'price6a',	'price7a',	'price8a',	'price9a',	'price10a',	'price11a',	'price12a'});
 
 
@@ -72,10 +72,14 @@ for subject = 1:num_subs
         clear prior list
         prior.mu = mean(log(this_rating_data.mean_Response+1));
         prior.var = var(log(this_rating_data.mean_Response+1));
+%         prior.mu = mean(this_rating_data.mean_Response);
+%         prior.var = var(this_rating_data.mean_Response);
         prior.kappa= 2;
         prior.nu = 1;
         
         list.vals = log(this_seq_Subj+1);
+%         list.vals = this_seq_Subj;
+
         list.length = numel(list.vals);
         list.Cs = 0;
         list.payoff_scheme = 1;
