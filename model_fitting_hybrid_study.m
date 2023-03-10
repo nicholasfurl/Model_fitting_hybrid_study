@@ -61,8 +61,8 @@ tic
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study'));
 cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study');
 
-study = 2;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing
-subjective_vals = 1;           %Run models using subjective values (ratings) or objective values (prices)?
+study = 5;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing
+subjective_vals = 0;           %Run models using subjective values (ratings) or objective values (prices)?
 check_params = 1;       %fit the same model that created the data and output estimated parameters
 make_est_model_data = 1;
 use_file_for_plots = 0; %use this if you want to use pre-estimated paraneters to generate simulated data (make_est_model_data == 1). References to plotting are obsolete but keeping legacy name
@@ -80,7 +80,7 @@ if use_file_for_plots ~=1;
 end;
 outpath = 'C:\matlab_files\fiance\parameter_recovery\outputs';
 payoff_scheme = 1;  %1 if continuous and 3-rank otherwise. This switch is only used for simulations from estimated params, when the payoff scheme wasn't specified before the param estimation stage
-filename_for_plots = 'C:\matlab_files\fiance\parameter_recovery\outputs\out_new_ll1_out_hybridFull_fromRawData_Log0vals1_20230303.mat';
+filename_for_plots = 'C:\matlab_files\fiance\parameter_recovery\outputs\out_new_ll1_out_hybridStudy2_fromRawData_Log0vals1_20230503.mat';
 
 
 %These correspond to identifiers (not configured implementations like in v2) in the v3_sweep version
@@ -627,6 +627,10 @@ for num_subs_found = Generate_params.num_subs_to_run;
             
         else;   %Any Bayesian models
             
+            if Generate_params.num_subs_to_run == 22;
+                fprintf('');
+            end;
+            
             [choiceStop, choiceCont, difVal]  = model_for_fitting(Generate_params,list);
             
             
@@ -704,10 +708,31 @@ end;    %loop through subs
 function [all_ratings seq_vals all_output payoff_scheme] = get_sub_data(subjective_vals,study);
 
 %initialise some things that may be changed below depending on study particulars.
+
+%So some conditions (full pilot, full, ratings) have a preceding ratings
+%phase that needs to be processed but other conditions don't
 ratings_phase = 0;
-header_names1 = {'ParticipantPrivateID','Correct','ScreenNumber','TrialNumber','Option1','Option2','Option3','Option4',	'Option5',	'Option6',	'Option7',	'Option8',	'Option9',	'Option10',	'Option11',	'Option12'};
-sequence_file_headers = header_names1;  %I want to keep this and the names as separate variables so even if sequence* changes, I can still access the names in header_names1
+
+%Some conditions (those where phase 2 is modelled after Costa & Averbeck:
+%pilot baseline, baseline, squares, ratings, timing) have slightly
+%differently formatted data. Part of this is that the columns have
+%different names as shown here. But also these have two display screens per
+%draw (as the participant views the option for fixed time, followed by
+%response promot screen, while full and full pilot see option and make
+%response on one screen). So I will create a switch header_format, which
+%will be 1 (and so will access first header and will divide screen numbers
+%by 2) or 2 (and so will access second header row#)
+header_names{1} = {'ParticipantPrivateID','Correct','ScreenNumber','TrialNumber','Option1','Option2','Option3','Option4',	'Option5',	'Option6',	'Option7',	'Option8',	'Option9',	'Option10',	'Option11',	'Option12'};
+header_names{2} = {'ParticipantPrivateID','Correct','ScreenNumber','TrialNumber','price1a','price2a','price3a','price4a',	'price5a',	'price6a',	'price7a',	'price8a',	'price9a',	'price10a',	'price11a',	'price12a'};
+ %initialise
+header_format = 1; 
+
+%0 if header_format == 1, 2 if full pilot and 1 if full. This is determined
+%by the string format of the options columns (containing all 12 prices used for the modeling).
+%For some reason this varies in the raw data from study to study
 option_chars = 0;
+
+%Full and full pilot have continuous payoff schemes (=1) and others have 3-rank (=0)
 payoff_scheme = 0;
 
 if study == 1;  %baseline pilot
@@ -715,7 +740,7 @@ if study == 1;  %baseline pilot
 elseif study == 2;  %full pilot
     data_folder = 'pilot_full';
     ratings_phase = 1;
-    sequence_file_headers = {'ParticipantPrivateID','Correct','ScreenNumber','TrialNumber','price1a','price2a','price3a','price4a',	'price5a',	'price6a',	'price7a',	'price8a',	'price9a',	'price10a',	'price11a',	'price12a'};
+    header_format = 2;     
     option_chars = 2;
     payoff_scheme = 1;
 elseif study == 3;  %baseline
@@ -723,7 +748,7 @@ elseif study == 3;  %baseline
 elseif study == 4;  %full
     data_folder = 'full';
     ratings_phase = 1;
-    sequence_file_headers = {'ParticipantPrivateID','Correct','ScreenNumber','TrialNumber','price1a','price2a','price3a','price4a',	'price5a',	'price6a',	'price7a',	'price8a',	'price9a',	'price10a',	'price11a',	'price12a'};
+    header_format = 2;
     option_chars = 1;
     payoff_scheme = 1;
 elseif study == 5;  %rating phase
@@ -734,6 +759,9 @@ elseif study == 6;  %squares
 elseif study == 7;  %timimg
     data_folder = 'timing';
 end;
+
+%set correct headers for this study
+sequence_file_headers = header_names{header_format};
 
 %find available data
 datafiles = dir( [data_folder filesep '*.csv'] );
@@ -772,7 +800,7 @@ for file=1:num_sequence_files;
     phase2_data = phase2_temp(phase2_temp.Correct==1,sequence_file_headers);
     
     %standardise the header names
-    phase2_data.Properties.VariableNames([5:16]) = header_names1(5:16);
+    phase2_data.Properties.VariableNames([5:16]) = header_names{1}(5:16);
     
     sequence_data_concatenated = [sequence_data_concatenated; phase2_data];
     
@@ -786,6 +814,12 @@ all_output = reshape( ...
     numel(unique(sequence_data_concatenated.TrialNumber)), ...
     numel(unique(sequence_data_concatenated.ParticipantPrivateID)) ...
     );
+%If it's a condition that uses the Costa & Averbeck two screen format
+%(option+response screens) then need to divide screen number by 2 to get
+%correct number of drawn options.
+if header_format == 1;
+    all_output = all_output / 2;
+end;
 
 %reformat strings with £ signs in cells to be doubles
 if option_chars ~= 2;   %if not full pilot (which already is in doubles for some reason.
@@ -947,6 +981,15 @@ for sub = 1:Generate_params.num_subs;
         prior.var = var(sigs);
         prior.kappa = 2;
         prior.nu = 1;
+        
+        %Sometimes (maybe just once) a subject will give the same rating to
+        %every phase 1 face and so prior.var comes out zero. Sahira
+        %probably excluded this subject for inattentiveness. But untill I
+        %check and confirm exclusions, I will add a minute number to make a
+        %nominal but negligable variance just to get gthe code to run.
+        if prior.var == 0;
+            prior.var = eps;
+        end;
         
         list.flip = 1;
         list.vals = vals;

@@ -8,7 +8,7 @@ function [choiceStop, choiceCont, difVal] = model_for_fitting(Generate_params,li
 %(I would update mean and variance directly from Generate_params 
 prior.mu    = Generate_params.PriorMean + Generate_params.model(Generate_params.current_model).BP; %prior mean offset is zero unless biased prior model
 prior.sig   = Generate_params.PriorVar + Generate_params.model(Generate_params.current_model).BPV;                        %Would a biased variance model be a distinct model?
-if prior.sig < 1; prior.sig = 1; end;   %It can happen randomly that a subject has a low variance and subtracting the bias gives a negative variance. Here, variance is set to minimal possible value.
+if prior.sig < 1; prior.sig = eps; end;   %It can happen randomly that a subject has a low variance and subtracting the bias gives a negative variance. Here, variance is set to minimal possible value.
 prior.kappa = Generate_params.model(Generate_params.current_model).kappa;   %prior mean update parameter
 prior.nu    = Generate_params.model(Generate_params.current_model).nu;
 
