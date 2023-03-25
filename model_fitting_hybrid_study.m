@@ -61,7 +61,7 @@ tic
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study'));
 cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study');
 
-study = 5;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing
+study = 3;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing 8:payoff
 subjective_vals = 0;           %Run models using subjective values (ratings) or objective values (prices)?
 check_params = 1;       %fit the same model that created the data and output estimated parameters
 make_est_model_data = 1;
@@ -535,7 +535,7 @@ for seq = 1:Generate_params.num_seqs;
         %cprob seqpos*choice(draw/stay)
         cprob(drawi, :) = exp(b*choiceValues(drawi, :))./sum(exp(b*choiceValues(drawi, :)));
     end;
-    
+     
     %Compute ll
     if listDraws == 1;  %If only one draw
         ll = ll - 0 - log(cprob(listDraws, 2));
@@ -546,6 +546,8 @@ for seq = 1:Generate_params.num_seqs;
             ll = ll - sum(log(cprob((listDraws-1), 1))) - log(cprob(listDraws, 2));
         end;
     end;
+    
+
     
 end;    %seq loop
 

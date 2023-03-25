@@ -1,10 +1,19 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [] = hybrid_plot_io_studies1and2;
+function [] = hybrid_plot_io_studies1and2_ll;
 
 cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study');
 
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\plotSpread'));
+
+%hybrid_plot_io_studies1and2_ll.m also adds in the stars condition, which
+%was neglected i the earluier version, and it reorganised the code to allow
+%for separate reward structures in the  [.12 .08 .04] monetary reward
+%conditions and the 5:3:1 ratio in the stars condition.
+
+%hybrid_plot_io_studies1ans2_ll.m builds in a ll computation that can be
+%used to decide which version of the ideal observer comes closest to
+%participants' choices. It doesn't fit anything though, not even softmax beta
 
 %Based on model_fitting_hybrid_study.m, this makes new figures of hybrid
 %conditions, using newly debugged code that operates directly on the raw
@@ -17,48 +26,96 @@ if compute_data == 1;
     
     %set up a matrix to tell the program what to run
     %put them in order you'd like to see their plots appear
-    %col1 -- 1: baseline pilot 1, 2: full pilot, 3: baseline, 4: full, 5: ratings, 6:squares, 7: timing
-    %cols 2 and 3 -- 1 run continuous reward scheme for sub, obj
-    %cols 4 and 5 -- 1 run 3-rank scheme for sub, obj
+    %col1 -- 3: full pilot, 5: full,  6: ratings, 2: baseline pilot 1, 4: baseline,  7:squares, 8: timing 9 stars (Do not use 1 as a study number!)
+    %a 1 if run model subjective continuous (col2), 3-rank money (col3), 3-rank 5/3/1 (col4) 
+    %then  objective continuous (col5, models_pick 4), 3-rank money (col6), 3-rank 5/3/1 (col7)  
     run_studies = [ ...
-        2 1 1 1 1; ...
-        4 1 1 1 1; ...
-        5 1 1 1 1; ...
-        1 0 1 0 1; ...
-        3 0 1 0 1; ...
-        6 0 1 0 1; ...
-        7 0 1 0 1; ...
-        8 0 1 0 1; ...
+        3 1 1 1 1 1 1; ...
+        5 1 1 1 1 1 1; ...
+        6 1 1 1 1 1 1; ...
+        2 0 0 0 1 1 1; ...
+        4 0 0 0 1 1 1; ...
+        7 0 0 0 1 1 1; ...
+        8 0 0 0 1 1 1; ...
+        9 0 0 0 1 1 1; ...
          ];
         
+%This will create plots that average and analyse rows from run_studies
+%Each row in run averages gives rows to be averaged for a given plot
+%Make sure all run_studies rows for a given average have the same models 
+%computed or plot might fail or be hard to interpret
+run_averages = { ...
+    [1 2 3], ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
+    [4:8] 
+};
+
+% %For testing purposes, a simple and relatively quick arrangement
 %     run_studies = [ ...
-%         8 0 1 0 1;
+%         2 0 0 0 0 0 1;
+%         4 0 0 0 0 0 1;
 %         ];
-    
+% 
+%     run_averages = { ...
+%         [1 2];
+%         };
+
+    %For posterity
+    data.model_labels = {'Participants' 'Subj-rew1' 'Subj-rew2' 'Subj-rew3' 'Obj-rew1' 'Obj-rew2' 'Obj-rew3'};
+    data.study_labels = {'' 'Baseline pilot' 'Full pilot', 'Baseline' 'Full',  'Ratings'  'Squares' 'Timing' 'Payoff'};
     data.num_studies = numel(unique(run_studies(:,1)));
     data.run_studies = run_studies;
+    data.run_averages = run_averages;
+    
+    %initalise averages datastruct
+    for this_average = 1:size(data.run_averages,2);
+        
+        %initialise fields to hold concatenated participant data
+        data.averages(this_average).samples = [];
+        data.averages(this_average).ranks = [];
+        
+        %get number of models, assuming all models for this average run the
+        %same models (and so we need only check the first study's number of models
+        num_models_this_average = sum( data.run_studies(data.run_averages{this_average}(1),:) == 1 );
+        
+        %inialise fields to hold concatenated model data
+        for model = 1:num_models_this_average;
+            
+            data.averages(this_average).model(model).samples = [];
+            data.averages(this_average).model(model).ll = [];
+            data.averages(this_average).model(model).ranks = [];
+            
+        end;    %model loop
+        
+    end;    %averaged plot loop
     
     for study = 1:data.num_studies;
         
         study_id = data.run_studies(study,1);
         
         data.study(study).study_id = study_id;
+        data.study(study).name = data.study_labels{study_id};
         
         %Now get data for every model requested
+        %models_pick just converts the binary / Boolean model specifiers to
+        %integer labels according to their index
         clear models_pick
-        models_pick = find(data.run_studies(study,2:end)==1);
+        %Find which indices specifying models are picked out by 1's
+        models_pick = find(data.run_studies(study,1:end)==1);
         
         for model = 1:numel(models_pick);
             
-            %identify model info based pn pick
-            subjective_vals = 0;
-            if models_pick(model) == 1 | models_pick(model) == 3;
+            %identify subj/obj values model info based on pick
+            subjective_vals = 0;    %objective values
+            if models_pick(model) == 2 | models_pick(model) == 3 | models_pick(model) == 4; %subjective values
                 subjective_vals = 1;
             end;
             
-            payoff_scheme = 0;
-            if models_pick(model) == 1 | models_pick(model) == 2;
-                payoff_scheme = 1;
+            %identify payoff scheme model info based on pick
+            payoff_scheme = 0;  %3-rank expressed in money (GBP), cols 3 and 6
+            if models_pick(model) == 2 | models_pick(model) == 5; %continuous valued
+                payoff_scheme = 1;  
+            elseif models_pick(model) == 4 | models_pick(model) == 7; %5/3/1 3-rank (appropriate for stars)
+                payoff_scheme = 2;
             end;
             
             %now returns (preserving legacy variable names):
@@ -77,6 +134,7 @@ if compute_data == 1;
             data.study(study).ranks = ranks_all;
             
             %model metadata
+            data.study(study).model(model).name = data.model_labels{models_pick(model)};
             data.study(study).model(model).models_pick = models_pick(model);
             data.study(study).model(model).subjective_vals = subjective_vals;
             data.study(study).model(model).payoff_scheme = payoff_scheme;
@@ -87,17 +145,49 @@ if compute_data == 1;
             disp('RUNNING MODEL NOW');
             data = run_models(data);
             
+            fprintf('');
+            
+            %Now accumulate data for making plots averaging over studies
+            for this_average = 1:size(data.run_averages,2);
+
+                if sum( data.run_averages{this_average} == study ) > 0; %check if this study is in this list of studies to average
+                    
+                    %concatenate participant data
+                    data.averages(this_average).samples = [ data.averages(this_average).samples; mean( data.study(study).samples )'];
+                    data.averages(this_average).ranks = [ data.averages(this_average).ranks; mean( data.study(study).ranks )'];
+                    
+                    %concatenate model data
+                    data.averages(this_average).model(model).samples = [ data.averages(this_average).model(model).samples; mean(data.study(study).model(model).samples)'];
+                    data.averages(this_average).model(model).ll = [ data.averages(this_average).model(model).ll; data.study(study).model(model).ll];
+                    data.averages(this_average).model(model).ranks = [ data.averages(this_average).model(model).ranks; mean(data.study(study).model(model).ranks)'];
+                    data.averages(this_average).model(model).models_pick = data.study(study).model(model).models_pick;
+                    data.averages(this_average).model(model).name = data.study(study).model(model).name;
+                end;
+                
+            end;    %loop through rows of averaged plots
+            
         end;    %models loop
         
     end;    %loop through studies
     
-%     save('data_struct3.mat','data'); %takes a long time to run and I might want to skip to here and load data later
-    
+    %takes a long time to run and I might want to skip to here and load data later
+%     save('data_struct3.mat','data');        %basic result
+%     save('hybrid_plot_io_ll.mat','data');   %basic result, but saves into data struct the ll too
+%     save('test_average_io_ll.mat','data');   %for testing
+%         save('hybrid_payoff2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
+         save('hybrid_v2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
+
+
+
 else
-    
-    load('data_struct3.mat','data'); %takes a long time to run and I might want to skip to here and load data later
-    
-end;
+  
+%        load('test_noNorm_io_ll.mat','data'); %takes a long time to run and I might want to skip to here and load data later
+%     load('hybrid_plot_io_ll.mat','data'); %takes a long time to run and I might want to skip to here and load data later
+%         load('hybrid_payoff2_io_ll.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
+%     load('test_average_io_ll.mat','data');   %for twsting
+         save('hybrid_v2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
+
+end;    %studies
 
 plot_results(data);
 
@@ -110,22 +200,52 @@ disp('audi5000')
 function plot_results(data)
 
 h1 = figure; set(gcf,'Color',[1 1 1]);  %samples
-plot_colors = lines(6);
+h2 = figure; set(gcf,'Color',[1 1 1]);  %ll
+h3 = figure; set(gcf,'Color',[1 1 1]);  %ranks
 
+plot_colors = lines(size(data.run_studies,2));
+
+%For figures h1-h3
 rows = ceil(data.num_studies/2);
 cols = ceil(data.num_studies/rows);
 
+x_axis_accum = [];
 for study = 1:data.num_studies;
-    
-    %samples
-    figure(h1)
-    subplot(rows,cols,study); hold on;
     
     x_axis_it = 1;
     
-    %participants
+    %participants samples
+    
+    figure(h1)
+    subplot(rows,cols,study); hold on;
     bar( x_axis_it, mean(mean(data.study(study).samples)), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
     plotSpread( mean(data.study(study).samples)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) );
+    num_options = size(data.study(study).model(1).seq_vals,2);
+    ylim([0 num_options]);
+    text( x_axis_it, -.5 ...
+        ,sprintf('%s','Participants') ...
+        ,'Fontname','Arial' ...
+        ,'Fontsize',12 ...
+        ,'Rotation',15 ...
+        ,'HorizontalAlignment','right' ...
+        );
+    
+
+    %participants ranks
+    figure(h3)
+    subplot(rows,cols,study); hold on;
+    bar( x_axis_it, mean(mean(data.study(study).ranks)), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
+    plotSpread( mean(data.study(study).ranks)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) );
+    num_options = size(data.study(study).model(1).seq_vals,2);
+    ylim([0 num_options]);
+    text( x_axis_it, -.5 ...
+        ,sprintf('%s','Participants') ...
+        ,'Fontname','Arial' ...
+        ,'Fontsize',12 ...
+        ,'Rotation',15 ...
+        ,'HorizontalAlignment','right' ...
+        );
+    
     
     %models
     num_models = size(data.study(study).model,2);
@@ -133,13 +253,144 @@ for study = 1:data.num_studies;
         
         x_axis_it = x_axis_it + 1;
         
-        bar( x_axis_it, mean(mean(data.study(study).model(model).samples)), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.study(study).model(model).models_pick+1,:));
-        plotSpread( mean(data.study(study).model(model).samples)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.study(study).model(model).models_pick+1,:) );
+        %plot samples for this model and study
+        figure(h1);
+        subplot(rows,cols,study); hold on;
+        bar( x_axis_it, mean(mean(data.study(study).model(model).samples)), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
+        plotSpread( mean(data.study(study).model(model).samples)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.study(study).model(model).models_pick,:) );
+        ylim([0 num_options]);
+        ylabel('Samples to decision');
+        title(data.study(study).name);
+        set(gca,'FontSize',12,'FontName','Arial','xtick',[],'ytick',[0:2:num_options],'LineWidth',2);
+        text( x_axis_it, -.5 ...
+            ,sprintf('%s',data.study(study).model(model).name) ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
+        
+        %plot ll for this model and study
+        figure(h2);
+        subplot(rows,cols,study); hold on;
+        bar( x_axis_it-1, mean(data.study(study).model(model).ll), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
+        plotSpread( data.study(study).model(model).ll , 'xValues', x_axis_it-1, 'distributionColors',plot_colors(data.study(study).model(model).models_pick,:) );
+        ylabel('Log-likelihood');
+        set(gca,'FontSize',12,'FontName','Arial','LineWidth',2,'xtick',[]);
+        ylim([0 75]);
+        text( x_axis_it-1, -3 ...
+            ,sprintf('%s',data.study(study).model(model).name) ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
+        
+        %plot ranks for this model and study
+        figure(h3);
+        subplot(rows,cols,study); hold on;
+        bar( x_axis_it, mean(mean(data.study(study).model(model).ranks)), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
+        plotSpread( mean(data.study(study).model(model).ranks)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.study(study).model(model).models_pick,:) );
+        ylim([0 num_options]);
+        ylabel('Rank of chosen option');
+        set(gca,'FontSize',12,'FontName','Arial','xtick',[],'ytick',[0:2:num_options],'LineWidth',2);
+        text( x_axis_it, -.5 ...
+            ,sprintf('%s',data.study(study).model(model).name) ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
         
     end;    %loop through models
     
-    
 end;    %loop through runs
+
+%Now do figure of averages
+h4 = figure; set(gcf,'Color',[1 1 1]);  %averages (samples, ll and ranks in rows and averaged groups of studies in cols)
+
+for ave_plot = 1:size(data.averages,2);
+    
+    x_axis_it = 1;
+    
+    %participant samples data
+    subplot(size(data.averages,2),3,((ave_plot-1)*3)+1); hold on;
+    bar( x_axis_it, mean(data.averages(ave_plot).samples), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
+    plotSpread( data.averages(ave_plot).samples , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) ); 
+    text( x_axis_it, -.5 ...
+            ,sprintf('%s','Participants') ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
+    
+    %participant ranks data
+    subplot(size(data.averages,2),3,((ave_plot-1)*3)+2); hold on;
+    bar( x_axis_it, mean(data.averages(ave_plot).ranks), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
+    plotSpread( data.averages(ave_plot).ranks , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) );
+    text( x_axis_it, -.5 ...
+            ,sprintf('%s','Participants') ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
+    
+    for model = 1:size(data.averages(1).model,2);
+        
+        x_axis_it = x_axis_it + 1;
+        
+        %samples
+        subplot(size(data.averages,2),3,((ave_plot-1)*3)+1); hold on;
+        bar( x_axis_it, mean(data.averages(ave_plot).model(model).samples), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
+        plotSpread( data.averages(ave_plot).model(model).samples , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.averages(ave_plot).model(model).models_pick,:) );
+        num_options = 12;
+        ylim([0 num_options]);
+        set(gca,'FontSize',12,'FontName','Arial','ytick',[0:2:num_options],'LineWidth',2,'xtick',[]);
+        ylabel('Samples to decision');
+        text( x_axis_it, -.5 ...
+            ,sprintf('%s',data.averages(ave_plot).model(model).name) ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
+        
+        %ranks
+        subplot(size(data.averages,2),3,((ave_plot-1)*3)+2); hold on;
+        bar( x_axis_it, mean(data.averages(ave_plot).model(model).ranks), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
+        plotSpread( data.averages(ave_plot).model(model).ranks , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.averages(ave_plot).model(model).models_pick,:) );
+        num_options = 12;
+        ylim([0 num_options]);
+        set(gca,'FontSize',12,'FontName','Arial','ytick',[0:2:num_options],'LineWidth',2,'xtick',[]);
+        ylabel('Rank of chosen option');
+        text( x_axis_it, -.5 ...
+            ,sprintf('%s',data.averages(ave_plot).model(model).name) ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
+        
+        %ll
+        subplot(size(data.averages,2),3,((ave_plot-1)*3)+3); hold on;
+        bar( x_axis_it, mean(data.averages(ave_plot).model(model).ll), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
+        plotSpread( data.averages(ave_plot).model(model).ll , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.averages(ave_plot).model(model).models_pick,:) );
+        set(gca,'FontSize',12,'FontName','Arial','LineWidth',2,'xtick',[]);
+        ylabel('Log-likelihood');
+        ylim([0 75]);
+        text( x_axis_it, -3 ...
+            ,sprintf('%s',data.averages(ave_plot).model(model).name) ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',12 ...
+            ,'Rotation',15 ...
+            ,'HorizontalAlignment','right' ...
+            );
+
+    end;    %loop through models for this average plot
+
+end;    %loop through average plots
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -174,7 +425,13 @@ for subject = 1:num_subs
     prior.kappa= 2;
     prior.nu = 1;
     
+    %Subject who rated almost every face a 1 in study 4 (full)
+            if subject == 34;
+                fprintf('');
+            end;
     
+    
+    ll = 0;
     for seq = 1:num_seqs;
         
         clear list choiceCont choiceStop difVal
@@ -192,7 +449,30 @@ for subject = 1:num_subs
         data.study(run_study).model(run_model).ranks(seq,subject) = ...
             seq_ranks(1,data.study(run_study).model(run_model).samples(seq,subject));
         
+        %update ll for this sequence
+                
+        %I need number of draws for this subject and sequence to compare against model
+        listDraws = data.study(run_study).samples(seq,subject);
+        
+        choiceValues = [choiceCont; choiceStop]';
+        
+        %softmax
+        b=1;    %ideal observer is optimal so not noisy
+        for drawi = 1 : listDraws
+            %cprob seqpos*choice(draw/stay)
+            cprob(drawi, :) = exp(b*choiceValues(drawi, :))./sum(exp(b*choiceValues(drawi, :)));
+        end;
+        
+        %accumulate ll
+        if listDraws == 1;  %If only one draw
+            ll = ll - 0 - log(cprob(listDraws, 2)); %take the log of just the option decision probability
+        else
+            ll = ll - sum(log(cprob((1:listDraws-1), 1))) - log(cprob(listDraws, 2));
+        end;
+        
     end;    %loop through seqs
+    
+    data.study(run_study).model(run_model).ll(subject,1) = ll;
     
 end;    %loop through subs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -318,14 +598,19 @@ if minValue == 1
     
     payoff = sort(sampleSeries,'descend');
     
-else
+elseif minValue == 2
+    
+    payoff = [5 3 1];
+    
+else;
     
     %maxPayRank = 3;
     %I've taken the actual payments for the top three ranks .12 .08 .04,
     %mapped them from the scale of the full price range to 0 to 100, added 1 
     %and taken the log (as we did with the price options)
-    payoff = log([1.0067    1.0045    1.0022]+1); 
-%     payoff = [5 3 1]; 
+%     payoff = log([1.0067    1.0045    1.0022]+1); 
+%      payoff = [5 3 1]; 
+    payoff = [.12 .08 .04]; 
 
 %     payoff = [5 3 1 ];
     % % payoff = [1 0 0 0 0 0];
@@ -354,8 +639,6 @@ Nx = length(x);
 % payoff = (payoff-0)/(minValue(end) - 0);    %normalise seq values between zero and 1 relative to maximally rated face
 
 
-
-
 % payoff(find(payoff~=8))=0.0000000000000000000000000000000001;
 % payoff(find(payoff==8))=100000000000000000000000000000;
 %
@@ -364,6 +647,17 @@ Nx = length(x);
 % payoff = ((payoff-0)/((numel(minValue)-1)-0));
 % end;
 % payoff = payoff.^40;
+
+
+%normalise payoff values between zero and 1 relative to maximally-valued option
+payoff = (payoff-log(1))/(log(101) - log(1));
+
+%normalise payoff values between custom range relative to maximally-valued option
+% new_max = 100;
+% new_min = 1;
+% old_max = log(101);
+% old_min = log(1);
+% payoff = (((new_max-new_min)*(payoff - old_min))/(old_max-old_min))+new_min;
 
 maxPayRank = numel(payoff);
 temp = [payoff zeros(1, 1000)];
@@ -409,7 +703,6 @@ if mxv > maxPayRank
 end
 
 rnkv = [Inf*ones(1,1); rnkvl(1:mxv)'; -Inf*ones(20, 1)];
-%rnkv = [Inf*ones(1,1); rnkvl(1:mxv); -Inf*ones(20, 1)];
 
 [postProb] = normInvChi(priorProb, data);
 px = posteriorPredictive(x, postProb);
@@ -594,28 +887,28 @@ option_chars = 0;
 
 
 
-if study == 1;  %baseline pilot
+if study == 2;  %baseline pilot
     data_folder = 'pilot_baseline';
-elseif study == 2;  %full pilot
+elseif study == 3;  %full pilot
     data_folder = 'pilot_full';
     ratings_phase = 1;
     header_format = 2;     option_chars = 2;
     %payoff_scheme = 1;
-elseif study == 3;  %baseline
+elseif study == 4;  %baseline
     data_folder = 'baseline';
-elseif study == 4;  %full
+elseif study == 5;  %full
     data_folder = 'full';
     ratings_phase = 1;
     header_format = 2;     option_chars = 1;
     %payoff_scheme = 1;
-elseif study == 5;  %rating phase
+elseif study == 6;  %rating phase
     data_folder = 'rating_phase';
     ratings_phase = 1;
-elseif study == 6;  %squares
+elseif study == 7;  %squares
     data_folder = 'squares';
-elseif study == 7;  %timimg
-    data_folder = 'timing';
 elseif study == 8;  %timimg
+    data_folder = 'timing';
+elseif study == 9;  %payoff (aka stars)
     data_folder = 'payoff';
 end;
 
@@ -756,6 +1049,11 @@ for subject = 1:num_subs
         
         if subjective_vals == 1;   %if subjective values
             
+            %Subject who rated almost every face a 1 in study 4 (full)
+            if subject == 34;
+                fprintf('');
+            end;
+            
             %Loop through options and replace price values with corresponding ratings for each participant
             clear this_rating_data this_seq_Subj;
             this_rating_data = mean_ratings(mean_ratings.ParticipantPrivateID == subs(subject),:);
@@ -765,8 +1063,11 @@ for subject = 1:num_subs
                 
             end;    %loop through options
             
-            all_ratings(:,subject) = this_rating_data.mean_Response; %to be returned by function
-            seq_vals(sequence,:,subject) = this_seq_Subj; %to be returned by function
+            %I've subtracted a 1 so that both prices and ratings will then
+            %be on a 0 to 100 scale. And then I can take log(value+1) of
+            %both and the smallest log transformed value of both will be zero.
+            all_ratings(:,subject) = this_rating_data.mean_Response -1; %to be returned by function
+            seq_vals(sequence,:,subject) = this_seq_Subj -1; %to be returned by function
             
         else;    %if objective values
             
@@ -782,7 +1083,7 @@ for subject = 1:num_subs
                 1.2020    1.2250    1.2300    1.2500    1.2540    1.3200    1.3220    1.3450    1.6830    1.6920    1.7090    1.7640]';
             
             %         %transform values
-            old_min = 0;
+            old_min = 1;
             old_max = max(the_prices);
             new_min=1;
             new_max = 100;

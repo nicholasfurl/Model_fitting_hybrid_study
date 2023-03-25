@@ -6,12 +6,15 @@ cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybr
 
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\plotSpread'));
 
-%Based on model_fitting_hybrid_study.m, this makes new figures of hybrid
+%hybrid_plot_fit_studies1and2.m Based on hybrid_plot_fit_studies1and2.m, modified to fit beta parameter
+%and get log likelihood for the different "io-like" models.
+
+%hybrid_plot_io_studies1and2.m Based on model_fitting_hybrid_study.m, this makes new figures of hybrid
 %conditions, using newly debugged code that operates directly on the raw
 %data. Hopefully these will be the figure-worthy ones in the end for the
 %Communications Psychology revisions.
 
-compute_data = 1;
+compute_data = 0;
 
 if compute_data == 1;
     
@@ -28,12 +31,8 @@ if compute_data == 1;
         3 0 1 0 1; ...
         6 0 1 0 1; ...
         7 0 1 0 1; ...
-        8 0 1 0 1; ...
-         ];
-        
-%     run_studies = [ ...
-%         8 0 1 0 1;
-%         ];
+        8 0 1 0 1;
+        ];
     
     data.num_studies = numel(unique(run_studies(:,1)));
     data.run_studies = run_studies;
@@ -83,27 +82,206 @@ if compute_data == 1;
             data.study(study).model(model).prior_vals = mean_ratings_all;
             data.study(study).model(model).seq_vals = seq_vals_all;
             
-            %model samples and ranks
+            %model samples, ranks, fitted parameter (beta) and log
+            %likelihood (in fmodel-specific fields in data)
             disp('RUNNING MODEL NOW');
-            data = run_models(data);
+            data = fit_models(data);
             
         end;    %models loop
         
     end;    %loop through studies
     
-%     save('data_struct3.mat','data'); %takes a long time to run and I might want to skip to here and load data later
+    save('hybrid_plot_fit_results_v2.mat','data'); %takes a long time to run and I might want to skip to here and load data later
     
 else
     
-    load('data_struct3.mat','data'); %takes a long time to run and I might want to skip to here and load data later
+    load('hybrid_plot_fit_results_v1.mat','data'); %takes a long time to run and I might want to skip to here and load data later
     
-end;
+end;    %Do I want to run all the models (can take a while or load pre-run file?
 
 plot_results(data);
 
 
 disp('audi5000')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function data = fit_models(data)
+
+%Does model for whatever the last study and model saved in data was (so can be evoked
+%in a loop through studies/models
+
+fprintf('');
+
+run_study = size(data.study,2); %which study to process?
+run_model = size(data.study(run_study).model,2); %which model to process?
+
+
+num_subs = size(data.study(run_study).model(run_model).seq_vals,3);
+num_seqs = size(data.study(run_study).model(run_model).seq_vals,1);
+
+%the only parameter is beta, with starting value equals no noise
+%Starting value of beta is zero because exp(0) = 1, or no noise. We use
+%exp(params) to ensure the beta enering softmax is always positive.
+params = 0;
+
+for subject = 1:num_subs;
+    
+    fprintf(' subject %d ,',subject);
+    
+    %get beta that yields best ll for this model and this subject
+    [data.study(run_study).model(run_model).estimated_params(subject,:) ...
+        ,  data.study(run_study).model(run_model).ll(subject,:) ...
+        , exitflag, search_out] = ...
+        fminsearch(  @(params) run_models( params, subject, data ), params);
+    
+    %get action values, samples and ranks for a model using best-fitting parameter
+    data = ...
+        get_model_performance( ...
+        data.study(run_study).model(run_model).estimated_params(subject,:), ...
+        subject, ...
+        data ...
+        );
+
+end;    %loop through subjects
+
+ fprintf('\n');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function data = get_model_performance(params,subject,data);
+
+run_study = size(data.study,2); %which study to process?
+run_model = size(data.study(run_study).model,2); %which model to process?
+
+num_subs = size(data.study(run_study).model(run_model).seq_vals,3);
+num_seqs = size(data.study(run_study).model(run_model).seq_vals,1);
+
+clear prior;
+prior.mu = mean(log(data.study(run_study).model(run_model).prior_vals(:,subject)+1));
+prior.var = var(log(data.study(run_study).model(run_model).prior_vals(:,subject)+1));
+if prior.var == 0;
+    prior.var = eps;
+end;
+prior.kappa= 2;
+prior.nu = 1;
+
+b = exp(params);    %constrain b to be positive
+
+for seq = 1:num_seqs;
+    
+    clear list choiceCont choiceStop difVal
+    list.vals = log(data.study(run_study).model(run_model).seq_vals(seq,:,subject)+1);
+    list.length = numel(list.vals);
+    list.Cs = 0;
+    list.payoff_scheme = data.study(run_study).model(run_model).payoff_scheme;
+    list.flip = 1;
+    
+    [choiceStop, choiceCont, difVal] = analyzeSecretary_nick_2023a(prior,list);
+    
+    choiceValues = [choiceCont; choiceStop]';
+    
+    %I need number of draws for this subject and sequence to compare against model
+    listDraws = data.study(run_study).samples(seq,subject);
+    
+    for drawi = 1 : size(list.vals,2);
+        %cprob seqpos*choice(draw/stay)
+        cprob(drawi, :) = exp(b*choiceValues(drawi, :))./sum(exp(b*choiceValues(drawi, :)));
+    end;
+    
+     cprob(end,2) = Inf; %ensure stop choice on final sample.
+     
+      %ranks for this sequence
+        dataList = tiedrank(list.vals);
+        
+        %Now get samples from uniform distribution
+        test = rand(1000,size(list.vals,2));
+        for iteration = 1:size(test,1);
+            
+            samples_this_test(iteration) = find(cprob(:,2)'>test(iteration,:),1,'first');
+            ranks_this_test(iteration) = dataList( samples_this_test(iteration) );
+            
+        end;    %iterations
+
+        data.study(run_study).model(run_model).samples(seq,subject) = round(mean(samples_this_test));
+        data.study(run_study).model(run_model).ranks(seq,subject) = round(mean(ranks_this_test));
+        data.study(run_study).model(run_model).ChoiceValues(:,:,seq,subject) = choiceValues;
+
+end; %loop through sequences
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function ll = run_models(params, subject, data);
+
+run_study = size(data.study,2); %which study to process?
+run_model = size(data.study(run_study).model,2); %which model to process?
+
+
+num_subs = size(data.study(run_study).model(run_model).seq_vals,3);
+num_seqs = size(data.study(run_study).model(run_model).seq_vals,1);
+
+clear prior;
+prior.mu = mean(log(data.study(run_study).model(run_model).prior_vals(:,subject)+1));
+prior.var = var(log(data.study(run_study).model(run_model).prior_vals(:,subject)+1));
+if prior.var == 0;
+    prior.var = eps;
+end;
+prior.kappa= 2;
+prior.nu = 1;
+
+b = exp(params);    %constrain b to be positive
+
+ll=0;
+for seq = 1:num_seqs;
+    
+    clear list choiceCont choiceStop difVal
+    list.vals = log(data.study(run_study).model(run_model).seq_vals(seq,:,subject)+1);
+    list.length = numel(list.vals);
+    list.Cs = 0;
+    list.payoff_scheme = data.study(run_study).model(run_model).payoff_scheme;
+    list.flip = 1;
+    
+    [choiceStop, choiceCont, difVal] = analyzeSecretary_nick_2023a(prior,list);
+    
+    choiceValues = [choiceCont; choiceStop]';
+    
+    %I need number of draws for this subject and sequence to compare against model
+    listDraws = data.study(run_study).samples(seq,subject);
+    
+    for drawi = 1 : listDraws
+        %cprob seqpos*choice(draw/stay)
+        cprob(drawi, :) = exp(b*choiceValues(drawi, :))./sum(exp(b*choiceValues(drawi, :)));
+    end;
+    
+    %Compute ll
+    if listDraws == 1;  %If only one draw
+        ll = ll - 0 - log(cprob(listDraws, 2)); %take the log of just the option decision probability
+    else
+        ll = ll - sum(log(cprob((1:listDraws-1), 1))) - log(cprob(listDraws, 2));
+    end;
+    
+    if ll == Inf | ll == -Inf;
+        fprintf('');
+    end;
+
+end;    %sequence loop
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -139,68 +317,8 @@ for study = 1:data.num_studies;
     end;    %loop through models
     
     
-end;    %loop through runs
+end;    %loop through studies
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function data = run_models(data)
-
-%Does model for whatever the last study and model saved in data was (so can be evoked
-%in a loop through studies/models
-
-fprintf('');
-
-run_study = size(data.study,2); %which study to process?
-run_model = size(data.study(run_study).model,2); %which model to process?
-
-
-num_subs = size(data.study(run_study).model(run_model).seq_vals,3);
-num_seqs = size(data.study(run_study).model(run_model).seq_vals,1);
-
-for subject = 1:num_subs
-    
-    clear prior;
-    prior.mu = mean(log(data.study(run_study).model(run_model).prior_vals(:,subject)+1));
-    prior.var = var(log(data.study(run_study).model(run_model).prior_vals(:,subject)+1));
-    if prior.var == 0;
-        prior.var = eps;
-    end;
-    prior.kappa= 2;
-    prior.nu = 1;
-    
-    
-    for seq = 1:num_seqs;
-        
-        clear list choiceCont choiceStop difVal
-        list.vals = log(data.study(run_study).model(run_model).seq_vals(seq,:,subject)+1);
-        list.length = numel(list.vals);
-        list.Cs = 0;
-        list.payoff_scheme = data.study(run_study).model(run_model).payoff_scheme;
-        list.flip = 1;
-        
-        [choiceStop, choiceCont, difVal] = analyzeSecretary_nick_2023a(prior,list);
-        
-        data.study(run_study).model(run_model).samples(seq,subject) = find(difVal<0,1,'first');
-        
-        seq_ranks = tiedrank(list.vals')';
-        data.study(run_study).model(run_model).ranks(seq,subject) = ...
-            seq_ranks(1,data.study(run_study).model(run_model).samples(seq,subject));
-        
-    end;    %loop through seqs
-    
-end;    %loop through subs
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-
-
 
 
 
@@ -321,13 +439,11 @@ if minValue == 1
 else
     
     %maxPayRank = 3;
+    %payoff = [5 3 1 0 0 0 0 0 0 0 0 0 0 0 0 0 ];
     %I've taken the actual payments for the top three ranks .12 .08 .04,
     %mapped them from the scale of the full price range to 0 to 100, added 1 
     %and taken the log (as we did with the price options)
     payoff = log([1.0067    1.0045    1.0022]+1); 
-%     payoff = [5 3 1]; 
-
-%     payoff = [5 3 1 ];
     % % payoff = [1 0 0 0 0 0];
     
 end;
@@ -366,7 +482,7 @@ Nx = length(x);
 % payoff = payoff.^40;
 
 maxPayRank = numel(payoff);
-temp = [payoff zeros(1, 1000)];
+temp = [payoff zeros(1, 20)];
 payoff = temp;
 
 
@@ -615,7 +731,7 @@ elseif study == 6;  %squares
     data_folder = 'squares';
 elseif study == 7;  %timimg
     data_folder = 'timing';
-elseif study == 8;  %timimg
+elseif study == 8;  %payoff (stars)
     data_folder = 'payoff';
 end;
 
@@ -782,7 +898,7 @@ for subject = 1:num_subs
                 1.2020    1.2250    1.2300    1.2500    1.2540    1.3200    1.3220    1.3450    1.6830    1.6920    1.7090    1.7640]';
             
             %         %transform values
-            old_min = 0;
+            old_min = 1;
             old_max = max(the_prices);
             new_min=1;
             new_max = 100;
