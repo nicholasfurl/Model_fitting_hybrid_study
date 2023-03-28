@@ -5,6 +5,13 @@ function [] = hybrid_plot_io_studies1and2_ll;
 cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study');
 
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\plotSpread'));
+addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\klabhub-bayesFactor-3d1e8a5'));
+
+%hybrid_plot_io_studies1and2_ll_rebar.m reorganises the order of the model
+%bars (and encoding in run_studies).
+
+%hybrid_plot_io_studies1and2_ll.m also paints lines onto plots showing
+%results of pairwise tests, Bayesian and frequentist.
 
 %hybrid_plot_io_studies1and2_ll.m also adds in the stars condition, which
 %was neglected i the earluier version, and it reorganised the code to allow
@@ -27,49 +34,117 @@ if compute_data == 1;
     %set up a matrix to tell the program what to run
     %put them in order you'd like to see their plots appear
     %col1 -- 3: full pilot, 5: full,  6: ratings, 2: baseline pilot 1, 4: baseline,  7:squares, 8: timing 9 stars (Do not use 1 as a study number!)
-    %a 1 if run model subjective continuous (col2), 3-rank money (col3), 3-rank 5/3/1 (col4) 
-    %then  objective continuous (col5, models_pick 4), 3-rank money (col6), 3-rank 5/3/1 (col7)  
+    %a 1 if run model subjective continuous (col2), 3-rank money (col3), 3-rank 5/3/1 (col4)
+    %then  objective continuous (col5, models_pick 4), 3-rank money (col6), 3-rank 5/3/1 (col7)
+    
+    %a 1 if run model:
+    %subjective continuous (col2), objective continulous (col3)
+    %subjective 3-rank money (col4), objective 3-rank money (col5)
+    %subjective 3-rank 5/3/1 (col6), objective 3-rank 5/3/1 (col7)
+    
+    %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
     run_studies = [ ...
         3 1 1 1 1 1 1; ...
         5 1 1 1 1 1 1; ...
         6 1 1 1 1 1 1; ...
-        2 0 0 0 1 1 1; ...
-        4 0 0 0 1 1 1; ...
-        7 0 0 0 1 1 1; ...
-        8 0 0 0 1 1 1; ...
-        9 0 0 0 1 1 1; ...
-         ];
-        
-%This will create plots that average and analyse rows from run_studies
-%Each row in run averages gives rows to be averaged for a given plot
-%Make sure all run_studies rows for a given average have the same models 
-%computed or plot might fail or be hard to interpret
-run_averages = { ...
-    [1 2 3], ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
-    [4:8] 
-};
-
-% %For testing purposes, a simple and relatively quick arrangement
-%     run_studies = [ ...
-%         2 0 0 0 0 0 1;
-%         4 0 0 0 0 0 1;
-%         ];
-% 
-%     run_averages = { ...
-%         [1 2];
-%         };
-
+        2 0 1 0 1 0 1; ...
+        4 0 1 0 1 0 1; ...
+        7 0 1 0 1 0 1; ...
+        8 0 1 0 1 0 1; ...
+        9 0 1 0 1 0 1; ...
+        ];
+    %
+    %     %This will create plots that average and analyse rows from run_studies
+    %     %Each row in run averages gives rows to be averaged for a given plot
+    %     %Make sure all run_studies rows for a given average have the same models
+    %     %computed or plot might fail or be hard to interpret
+    run_averages = { ...
+        [1 2 3]; ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
+        [4:8]
+        };
+    out_filename = 'hybrid_plot_allModels_rebar.mat';
+    %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        %%%%%%%%SM Figure, models matched with their subj and obj reward-appropriate counterparts%%%%%%
+    run_studies = [ ...
+        3 1 1 0 0 0 0; ...
+        5 1 1 0 0 0 0; ...
+        6 0 0 1 1 0 0; ...
+        2 0 0 0 1 0 0; ...
+        4 0 0 0 1 0 0; ...
+        7 0 0 0 1 0 0; ...
+        8 0 0 0 1 0 0; ...
+        9 0 0 0 0 0 1; ...
+        ];
+    %
+    %     %This will create plots that average and analyse rows from run_studies
+    %     %Each row in run averages gives rows to be averaged for a given plot
+    %     %Make sure all run_studies rows for a given average have the same models
+    %     %computed or plot might fail or be hard to interpret
+    run_averages = { ...
+        [1 2 3]; ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
+        [4:8]
+        };
+    out_filename = 'hybrid_plot_appropModels_rebar.mat';
+    %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    %     % %%%%%%%For testing purposes, a simple and relatively quick arrangement
+    %     run_studies = [ ...
+    %         2 0 0 0 0 1 1;
+    %         4 0 0 0 0 1 1;
+    %         5 0 0 0 0 0 1
+    %         6 0 0 0 0 0 1
+    %         ];
+    
+    %     %Make sure all indices on a row here use the same models
+    %     run_averages = { ...
+    %         [1 2];
+    %         [3 4]
+    %         };
+    %     out_filename = 'hybrid_plot_testRun.mat';
+    %     % %%%%%%%For testing purposes, a simple and relatively quick arrangement
+    
+    
+    
+    
+    
+    
+    
     %For posterity
-    data.model_labels = {'Participants' 'Subj-rew1' 'Subj-rew2' 'Subj-rew3' 'Obj-rew1' 'Obj-rew2' 'Obj-rew3'};
+%     data.model_labels = {'Participants' 'Subj-rew1' 'Subj-rew2' 'Subj-rew3' 'Obj-rew1' 'Obj-rew2' 'Obj-rew3'};
+    data.model_labels = {'Participants' 'Subj-rew1' 'Obj-rew1' 'Subj-rew2' 'Obj-rew2' 'Subj-rew3' 'Obj-rew3'};
     data.study_labels = {'' 'Baseline pilot' 'Full pilot', 'Baseline' 'Full',  'Ratings'  'Squares' 'Timing' 'Payoff'};
     data.num_studies = numel(unique(run_studies(:,1)));
     data.run_studies = run_studies;
     data.run_averages = run_averages;
+    data.out_filename = out_filename;
     
     %initalise averages datastruct
-    for this_average = 1:size(data.run_averages,2);
+    for this_average = 1:size(data.run_averages,1); %Loop through rows of run averages to figure out how many average and model fields you need
         
         %initialise fields to hold concatenated participant data
+        %There will be one field per row of run_averages, however many
+        %studies or models there are.
         data.averages(this_average).samples = [];
         data.averages(this_average).ranks = [];
         
@@ -88,6 +163,10 @@ run_averages = { ...
         
     end;    %averaged plot loop
     
+    
+    
+    %Here is the main loop that gets participant data per study and
+    %computes all the corresponding models.
     for study = 1:data.num_studies;
         
         study_id = data.run_studies(study,1);
@@ -104,17 +183,17 @@ run_averages = { ...
         
         for model = 1:numel(models_pick);
             
-            %identify subj/obj values model info based on pick
+            %identify subj/obj values model info based on pick (col num of run_studies, from 2 to 7)
             subjective_vals = 0;    %objective values
-            if models_pick(model) == 2 | models_pick(model) == 3 | models_pick(model) == 4; %subjective values
+            if models_pick(model) == 2 | models_pick(model) == 4 | models_pick(model) == 6; %subjective values
                 subjective_vals = 1;
             end;
             
             %identify payoff scheme model info based on pick
-            payoff_scheme = 0;  %3-rank expressed in money (GBP), cols 3 and 6
-            if models_pick(model) == 2 | models_pick(model) == 5; %continuous valued
-                payoff_scheme = 1;  
-            elseif models_pick(model) == 4 | models_pick(model) == 7; %5/3/1 3-rank (appropriate for stars)
+            payoff_scheme = 0;  %3-rank expressed in money (GBP), cols 4 and 5
+            if models_pick(model) == 2 | models_pick(model) == 3; %continuous valued
+                payoff_scheme = 1;
+            elseif models_pick(model) == 6 | models_pick(model) == 7; %5/3/1 3-rank (appropriate for stars)
                 payoff_scheme = 2;
             end;
             
@@ -147,14 +226,13 @@ run_averages = { ...
             
             fprintf('');
             
-            %Now accumulate data for making plots averaging over studies
-            for this_average = 1:size(data.run_averages,2);
-
+            %Now accumulate MODEL data for making plots averaging over studies
+            for this_average = 1:size(data.run_averages,1);
+                
+                %                 if this_average == 2 and model == 2;
+                %                     fprintf(' ');
+                
                 if sum( data.run_averages{this_average} == study ) > 0; %check if this study is in this list of studies to average
-                    
-                    %concatenate participant data
-                    data.averages(this_average).samples = [ data.averages(this_average).samples; mean( data.study(study).samples )'];
-                    data.averages(this_average).ranks = [ data.averages(this_average).ranks; mean( data.study(study).ranks )'];
                     
                     %concatenate model data
                     data.averages(this_average).model(model).samples = [ data.averages(this_average).model(model).samples; mean(data.study(study).model(model).samples)'];
@@ -162,31 +240,45 @@ run_averages = { ...
                     data.averages(this_average).model(model).ranks = [ data.averages(this_average).model(model).ranks; mean(data.study(study).model(model).ranks)'];
                     data.averages(this_average).model(model).models_pick = data.study(study).model(model).models_pick;
                     data.averages(this_average).model(model).name = data.study(study).model(model).name;
-                end;
+                end;    %is the study in the average list and so needs to be concateneated?
                 
             end;    %loop through rows of averaged plots
             
         end;    %models loop
         
+        %Now (outside of model loop but within study loop) accumulate PARTICIPANT data for making plots, which average over studies
+        for this_average = 1:size(data.run_averages,1);
+            
+            if sum( data.run_averages{this_average} == study ) > 0; %check if this study is in this list of studies to average
+                
+                %concatenate participant data
+                data.averages(this_average).samples = [ data.averages(this_average).samples; mean( data.study(study).samples )'];
+                data.averages(this_average).ranks = [ data.averages(this_average).ranks; mean( data.study(study).ranks )'];
+                
+            end;    %is the study in the average list and so needs to be concateneated?
+            
+        end;    %loop through rows of averaged plots
+        
     end;    %loop through studies
     
     %takes a long time to run and I might want to skip to here and load data later
-%     save('data_struct3.mat','data');        %basic result
-%     save('hybrid_plot_io_ll.mat','data');   %basic result, but saves into data struct the ll too
-%     save('test_average_io_ll.mat','data');   %for testing
-%         save('hybrid_payoff2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
-         save('hybrid_v2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
-
-
-
+    %     save('data_struct3.mat','data');        %basic result
+    %     save('hybrid_plot_io_ll.mat','data');   %basic result, but saves into data struct the ll too
+    %     save('test_average_io_ll.mat','data');   %for testing
+    %         save('hybrid_payoff2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
+    %save('hybrid_v2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
+    save(out_filename,'data');
+    
+    
 else
-  
-%        load('test_noNorm_io_ll.mat','data'); %takes a long time to run and I might want to skip to here and load data later
-%     load('hybrid_plot_io_ll.mat','data'); %takes a long time to run and I might want to skip to here and load data later
-%         load('hybrid_payoff2_io_ll.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
-%     load('test_average_io_ll.mat','data');   %for twsting
-         save('hybrid_v2_io_ll_v2).mat','data');   %introducing 5:3:1 payoffs and stars condition analysis 
-
+    
+    %        load('test_noNorm_io_ll.mat','data'); %takes a long time to run and I might want to skip to here and load data later
+    %     load('hybrid_plot_io_ll.mat','data'); %takes a long time to run and I might want to skip to here and load data later
+    %         load('hybrid_payoff2_io_ll.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
+    %     load('test_average_io_ll.mat','data');   %for twsting
+    load('hybrid_plot_allModels_rebar.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
+    %     load('hybrid_plot_testRun.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
+    
 end;    %studies
 
 plot_results(data);
@@ -199,26 +291,86 @@ disp('audi5000')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
 function plot_results(data)
 
+%Figures comparing participants and models
 h1 = figure; set(gcf,'Color',[1 1 1]);  %samples
 h2 = figure; set(gcf,'Color',[1 1 1]);  %ll
 h3 = figure; set(gcf,'Color',[1 1 1]);  %ranks
+%h4 figure is defined below and shows data collapsing over studies
+h5 = figure; set(gcf,'Color',[1 1 1]);  %compares participant performance study by study in one plot (for samples / ranks each)
 
 plot_colors = lines(size(data.run_studies,2));
 
 %For figures h1-h3
-rows = ceil(data.num_studies/2);
-cols = ceil(data.num_studies/rows);
+cols = ceil(data.num_studies/2);
+rows = ceil(data.num_studies/cols);
 
-x_axis_accum = [];
+%misc necessities for below
+ll_maxY = 55;   %roughly what you think the maximum Y value containing ll data will be. The sig connector lines will be drawn above this
+BayesThresh = 3;    %How big a Bayes factor needed to paint onto plot?
+x_rot = 30;
+bar_line_width = 2;
+bar_alpha = .1;
+
+
 for study = 1:data.num_studies;
+    
+    this_study_sampling = [];
+    this_study_ll = [];
+    this_study_ranks = [];
     
     x_axis_it = 1;
     
     %participants samples
     
+    %Set up figure comparing participant sampling /ranks per study
+    %Yet another accumulator! This one is to facilitate plots and pairwise tests
+    %between participant performance measures in the different
+    %conditions. Need this later for pairwise tests
+    %Need cell array since studies vary in sample size slightly
+    P_accum_samples{study} = mean(data.study(study).samples);
+    P_accum_ranks{study} = mean(data.study(study).ranks);
+    
+    figure(h5)
+    
+    %samples
+    subplot(2,1,1);
+    bar( study, mean(P_accum_samples{study}),'LineWidth',bar_line_width, 'FaceAlpha', bar_alpha, 'FaceColor', plot_colors(1,:));
+    plotSpread( P_accum_samples{study}' , 'xValues', study, 'distributionColors',plot_colors(1,:) );
+    num_options = size(data.study(study).model(1).seq_vals,2);
+    ylim([0 num_options]);
+    ylabel('Samples to decision');
+    set(gca,'FontSize',12,'FontName','Arial','xtick',[],'ytick',[0:2:num_options],'LineWidth',2);
+    text( study, -1.5 ...
+        ,sprintf('%s',data.study(study).name) ...
+        ,'Fontname','Arial' ...
+        ,'Fontsize',12 ...
+        ,'Rotation',x_rot ...
+        ,'HorizontalAlignment','right' ...
+        );
+    box off;
+    
+    %ranks
+    subplot(2,1,2);
+    bar( study, mean(P_accum_ranks{study}),'LineWidth',bar_line_width, 'FaceAlpha', bar_alpha, 'FaceColor', plot_colors(1,:));
+    plotSpread( P_accum_ranks{study}' , 'xValues', study, 'distributionColors',plot_colors(1,:) );
+    num_options = size(data.study(study).model(1).seq_vals,2);
+    ylim([0 num_options]);
+    ylabel('Rank of chosen option');
+    set(gca,'FontSize',12,'FontName','Arial','xtick',[],'ytick',[0:2:num_options],'LineWidth',2);
+    text( study, -1.5 ...
+        ,sprintf('%s',data.study(study).name) ...
+        ,'Fontname','Arial' ...
+        ,'Fontsize',12 ...
+        ,'Rotation',x_rot ...
+        ,'HorizontalAlignment','right' ...
+        );
+    box off;
+    
+    
+    
     figure(h1)
     subplot(rows,cols,study); hold on;
-    bar( x_axis_it, mean(mean(data.study(study).samples)), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
+    bar( x_axis_it, mean(mean(data.study(study).samples)),'LineWidth',bar_line_width, 'FaceAlpha', bar_alpha, 'FaceColor', plot_colors(1,:));
     plotSpread( mean(data.study(study).samples)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) );
     num_options = size(data.study(study).model(1).seq_vals,2);
     ylim([0 num_options]);
@@ -226,15 +378,15 @@ for study = 1:data.num_studies;
         ,sprintf('%s','Participants') ...
         ,'Fontname','Arial' ...
         ,'Fontsize',12 ...
-        ,'Rotation',15 ...
+        ,'Rotation',x_rot ...
         ,'HorizontalAlignment','right' ...
         );
     
-
+    
     %participants ranks
     figure(h3)
     subplot(rows,cols,study); hold on;
-    bar( x_axis_it, mean(mean(data.study(study).ranks)), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
+    bar( x_axis_it, mean(mean(data.study(study).ranks)),'LineWidth',bar_line_width, 'FaceAlpha', bar_alpha, 'FaceColor', plot_colors(1,:));
     plotSpread( mean(data.study(study).ranks)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) );
     num_options = size(data.study(study).model(1).seq_vals,2);
     ylim([0 num_options]);
@@ -242,10 +394,13 @@ for study = 1:data.num_studies;
         ,sprintf('%s','Participants') ...
         ,'Fontname','Arial' ...
         ,'Fontsize',12 ...
-        ,'Rotation',15 ...
+        ,'Rotation', x_rot ...
         ,'HorizontalAlignment','right' ...
         );
     
+    %Accumulate participant sampling data and ranks data for pairwise tests below
+    this_study_sampling(:,x_axis_it) = mean(data.study(study).samples)';
+    this_study_ranks(:,x_axis_it) = mean(data.study(study).ranks)';
     
     %models
     num_models = size(data.study(study).model,2);
@@ -256,7 +411,7 @@ for study = 1:data.num_studies;
         %plot samples for this model and study
         figure(h1);
         subplot(rows,cols,study); hold on;
-        bar( x_axis_it, mean(mean(data.study(study).model(model).samples)), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
+        bar( x_axis_it, mean(mean(data.study(study).model(model).samples)),'LineWidth',bar_line_width, 'FaceAlpha', bar_alpha, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
         plotSpread( mean(data.study(study).model(model).samples)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.study(study).model(model).models_pick,:) );
         ylim([0 num_options]);
         ylabel('Samples to decision');
@@ -266,84 +421,285 @@ for study = 1:data.num_studies;
             ,sprintf('%s',data.study(study).model(model).name) ...
             ,'Fontname','Arial' ...
             ,'Fontsize',12 ...
-            ,'Rotation',15 ...
+            ,'Rotation', x_rot ...
             ,'HorizontalAlignment','right' ...
             );
         
         %plot ll for this model and study
         figure(h2);
         subplot(rows,cols,study); hold on;
-        bar( x_axis_it-1, mean(data.study(study).model(model).ll), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
+        bar( x_axis_it-1, mean(data.study(study).model(model).ll),'LineWidth',bar_line_width, 'FaceAlpha', bar_alpha, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
         plotSpread( data.study(study).model(model).ll , 'xValues', x_axis_it-1, 'distributionColors',plot_colors(data.study(study).model(model).models_pick,:) );
         ylabel('Log-likelihood');
-        set(gca,'FontSize',12,'FontName','Arial','LineWidth',2,'xtick',[]);
-        ylim([0 75]);
+        title(data.study(study).name);
+        set(gca,'FontSize',12,'FontName','Arial','LineWidth',2,'xtick',[],'ytick',[0:10:ll_maxY]);
+        ylim([0 ll_maxY]);
         text( x_axis_it-1, -3 ...
             ,sprintf('%s',data.study(study).model(model).name) ...
             ,'Fontname','Arial' ...
             ,'Fontsize',12 ...
-            ,'Rotation',15 ...
+            ,'Rotation', x_rot ...
             ,'HorizontalAlignment','right' ...
             );
         
         %plot ranks for this model and study
         figure(h3);
         subplot(rows,cols,study); hold on;
-        bar( x_axis_it, mean(mean(data.study(study).model(model).ranks)), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
+        bar( x_axis_it, mean(mean(data.study(study).model(model).ranks)),'LineWidth',bar_line_width, 'FaceAlpha',bar_alpha, 'FaceColor', plot_colors(data.study(study).model(model).models_pick,:));
         plotSpread( mean(data.study(study).model(model).ranks)' , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.study(study).model(model).models_pick,:) );
         ylim([0 num_options]);
         ylabel('Rank of chosen option');
+        title(data.study(study).name);
         set(gca,'FontSize',12,'FontName','Arial','xtick',[],'ytick',[0:2:num_options],'LineWidth',2);
         text( x_axis_it, -.5 ...
             ,sprintf('%s',data.study(study).model(model).name) ...
             ,'Fontname','Arial' ...
             ,'Fontsize',12 ...
-            ,'Rotation',15 ...
+            ,'Rotation', x_rot ...
             ,'HorizontalAlignment','right' ...
             );
         
+        %Accumulate model sampling data, ll and ranks data for pairwise tests below
+        this_study_sampling(:,x_axis_it) = mean(data.study(study).model(model).samples)';
+        this_study_ll(:,x_axis_it-1) = data.study(study).model(model).ll;
+        this_study_ranks(:,x_axis_it) = mean(data.study(study).model(model).ranks)';
+        
     end;    %loop through models
     
-end;    %loop through runs
+    %I need comparisons for participants against each model for samples and
+    %ranks but comparisons for all pairs of models for ll. So loop through
+    %all pairs and run ones needed when they come up.
+    fprintf('')
+    pairs = nchoosek(1:size(this_study_sampling,2),2);
+    num_pairs = size(pairs,1);
+    [a In] = sort(diff(pairs')','descend');  %lengths of connecting lines
+    line_pair_order = pairs(In,:);    %move longest connections to top
+    
+    %iterators, to standardise y locations of connector lines across graphs
+    i_samples = 1;  %for samples
+    i_ranks = 1;    %for ranks
+    i_ll = 1;   %for log likelihood
+    
+    for pair = 1:num_pairs;
+        
+        clear temp;
+        
+        %Is this a pair involving participants? (needed for samples and ranks)
+        if sum(line_pair_order(pair,:) == 1) == 1;
+            
+            %find difference between vectors for participants and this pair's model
+            temp(:,1) = this_study_sampling(:,line_pair_order(pair,1)) - this_study_sampling(:,line_pair_order(pair,2));
+            temp(:,2) = this_study_ranks(:,line_pair_order(pair,1)) - this_study_ranks(:,line_pair_order(pair,2));
+            
+            fig_Hs = [h1 h3];
+            
+            %Where to put top line (samples and ranks)?
+            y_inc = .5;
+            %             ystart = num_options + y_inc*num_pairs + 2*y_inc;
+            ystart = num_options + 6*y_inc;
+            line_y_values = ystart:-y_inc:0;
+            
+            x_position_1 = line_pair_order(pair,1);
+            x_position_2 = line_pair_order(pair,2);
+            
+            correction = num_models;
+            
+            iterator = [i_samples i_ranks];
+            
+        else;   %If the contrast does NOT involve participants then it must be between models, which means we want an ll contrast instead.
+            
+            temp = this_study_ll(:,line_pair_order(pair,1)-1) - this_study_ll(:,line_pair_order(pair,2)-1);
+            
+            fig_Hs = [h2];
+            
+            %Where to put top line (samples and ranks)?
+            y_inc = 5;
+            ystart = ll_maxY + 15*y_inc;
+            line_y_values = ystart:-y_inc:0;
+            
+            x_position_1 = line_pair_order(pair,1)-1;
+            x_position_2 = line_pair_order(pair,2)-1;
+            
+            if num_models > 1;
+                correction = size(nchoosek(1:num_models,2),2);
+            else
+                correction = 1;
+            end;
+            
+            iterator = [i_ll];
+            
+            if line_pair_order(pair,1) == 5 & line_pair_order(pair,2) == 6
+                fprintf('');
+            end;
+            
+        end;    %check if col 1 (participants) included in this pair
+        
+        %Now use temp and fig_Hs to compute and draw stats results
+        for which_plot = 1:size(temp,2);
+            
+            %Get stats for this difference
+            clear bf10 pval ci stats;
+            
+            [bf10,pvals,ci,stats] = ...
+                bf.ttest( temp(:,which_plot) );
+            
+            %plot result
+            figure(fig_Hs(which_plot));
+            ylim([0 ystart]);
+            
+            switch_i = 0;   %did I use a line at all?
+            if pvals < 0.05/correction;
+                plot([x_position_1 x_position_2],...
+                    [line_y_values(iterator(which_plot)) line_y_values(iterator(which_plot))] ,'LineWidth',4,'Color',[0 0 0]);
+                switch_i = 1;
+            end;
+            
+            if bf10 < (1/BayesThresh);
+                plot([x_position_1 x_position_2],...
+                    [line_y_values(iterator(which_plot)) line_y_values(iterator(which_plot))],'LineWidth',2,'Color',[1 0 1]);
+                switch_i = 1;
+            end;
+            
+            if bf10 > BayesThresh;
+                plot([x_position_1 x_position_2],...
+                    [line_y_values(iterator(which_plot)) line_y_values(iterator(which_plot))],'LineWidth',1,'Color',[0 1 0]);
+                switch_i = 1;
+            end;
+            
+            %Not very elegent, but I want to control spaces between
+            %connector lines and so want to increment an iterator everytime
+            %I draw a line and use it to determine location of next line.
+            if switch_i == 1;   %If something was drawn on a plot on this round
+                
+                %Figure out which plot it was drawn on and increement that plot's iterator
+                if fig_Hs(which_plot) == h1; i_samples = i_samples + 1;
+                elseif fig_Hs(which_plot) == h3; i_ranks = i_ranks + 1;
+                else fig_Hs(which_plot) == h2; i_ll = i_ll + 1;
+                end;    %test which y position iterator requires updating on this round
+                
+            end;    %check if a line was drawn
+        end;    %loop through however many differences were computed above
+    end;    %loop through condition pairs for pairwise tests
+    
+    
+end;    %loop through runs / studies
+
+
+%Now that you've accumulated data for all studies, add pairwise tests
+%comparing samples and ranks between studies to plot h5
+pairs = nchoosek(1:size(P_accum_samples,2),2);
+num_pairs = size(pairs,1);
+[a In] = sort(diff(pairs')','descend');  %lengths of connecting lines
+line_pair_order = pairs(In,:);    %move longest connections to top
+
+%Where to put top line (samples and ranks)?
+y_inc = .75;
+ystart = num_options + num_pairs*y_inc;
+line_y_values = ystart:-y_inc:0;
+
+correction = num_pairs;
+
+for pair = 1:num_pairs;
+    
+    [bf10(1),pValue(1)] = ttest2(P_accum_samples{line_pair_order(pair,1)}',P_accum_samples{line_pair_order(pair,2)}');
+    [bf10(2),pValue(2)] = ttest2(P_accum_ranks{line_pair_order(pair,1)}',P_accum_ranks{line_pair_order(pair,2)}');
+    
+    x_position_1 = line_pair_order(pair,1);
+    x_position_2 = line_pair_order(pair,2);
+    
+    figure(h5)
+    
+    for graph = 1:2; %samples and ranks
+        
+        subplot(2,1,graph);
+        if pValue(graph) < 0.05/correction;
+            plot([x_position_1 x_position_2],...
+                [line_y_values(pair) line_y_values(pair)] ,'LineWidth',4,'Color',[0 0 0]);
+        end;
+        
+        if bf10(graph) < (1/BayesThresh);
+            plot([x_position_1 x_position_2],...
+                [line_y_values(pair) line_y_values(pair)],'LineWidth',2,'Color',[1 0 1]);
+        end;
+        
+        if bf10(graph) > BayesThresh;
+            plot([x_position_1 x_position_2],...
+                [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[0 1 0]);
+        end;
+        
+        ylim([0, ystart])
+        set(gca,'ytick',[0:2:num_options]);
+
+        
+    end;    %loop through graphs
+end;    %loop through pairs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 %Now do figure of averages
 h4 = figure; set(gcf,'Color',[1 1 1]);  %averages (samples, ll and ranks in rows and averaged groups of studies in cols)
 
+
 for ave_plot = 1:size(data.averages,2);
     
+    %initialise new stuff this loop
     x_axis_it = 1;
+    
+    %to hold data for pairwise tests and connector lines on plot later
+    ave_accum_samples = [];
+    ave_accum_ll = [];
+    ave_accum_ranks = [];
     
     %participant samples data
     subplot(size(data.averages,2),3,((ave_plot-1)*3)+1); hold on;
-    bar( x_axis_it, mean(data.averages(ave_plot).samples), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
-    plotSpread( data.averages(ave_plot).samples , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) ); 
+    bar( x_axis_it, mean(data.averages(ave_plot).samples), 'LineWidth',bar_line_width,'FaceAlpha',bar_alpha, 'FaceColor', plot_colors(1,:));
+    plotSpread( data.averages(ave_plot).samples , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) );
     text( x_axis_it, -.5 ...
-            ,sprintf('%s','Participants') ...
-            ,'Fontname','Arial' ...
-            ,'Fontsize',12 ...
-            ,'Rotation',15 ...
-            ,'HorizontalAlignment','right' ...
-            );
+        ,sprintf('%s','Participants') ...
+        ,'Fontname','Arial' ...
+        ,'Fontsize',12 ...
+        ,'Rotation', x_rot ...
+        ,'HorizontalAlignment','right' ...
+        );
     
     %participant ranks data
     subplot(size(data.averages,2),3,((ave_plot-1)*3)+2); hold on;
-    bar( x_axis_it, mean(data.averages(ave_plot).ranks), 'FaceAlpha',.1, 'FaceColor', plot_colors(1,:));
+    bar( x_axis_it, mean(data.averages(ave_plot).ranks),'LineWidth',bar_line_width, 'FaceAlpha',bar_alpha, 'FaceColor', plot_colors(1,:));
     plotSpread( data.averages(ave_plot).ranks , 'xValues', x_axis_it, 'distributionColors',plot_colors(1,:) );
     text( x_axis_it, -.5 ...
-            ,sprintf('%s','Participants') ...
-            ,'Fontname','Arial' ...
-            ,'Fontsize',12 ...
-            ,'Rotation',15 ...
-            ,'HorizontalAlignment','right' ...
-            );
+        ,sprintf('%s','Participants') ...
+        ,'Fontname','Arial' ...
+        ,'Fontsize',12 ...
+        ,'Rotation', x_rot ...
+        ,'HorizontalAlignment','right' ...
+        );
     
-    for model = 1:size(data.averages(1).model,2);
+    %Accumulate participant and model data to facilitate plots and pairwise tests
+    %on data averaged over studies later
+    ave_accum_samples(:,x_axis_it) = data.averages(ave_plot).samples;
+    ave_accum_ranks(:,x_axis_it) = data.averages(ave_plot).ranks;
+    
+    
+    for model = 1:size(data.averages(ave_plot).model,2);
         
         x_axis_it = x_axis_it + 1;
         
         %samples
         subplot(size(data.averages,2),3,((ave_plot-1)*3)+1); hold on;
-        bar( x_axis_it, mean(data.averages(ave_plot).model(model).samples), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
+        bar( x_axis_it, mean(data.averages(ave_plot).model(model).samples),'LineWidth',bar_line_width, 'FaceAlpha',bar_alpha, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
         plotSpread( data.averages(ave_plot).model(model).samples , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.averages(ave_plot).model(model).models_pick,:) );
         num_options = 12;
         ylim([0 num_options]);
@@ -353,13 +709,13 @@ for ave_plot = 1:size(data.averages,2);
             ,sprintf('%s',data.averages(ave_plot).model(model).name) ...
             ,'Fontname','Arial' ...
             ,'Fontsize',12 ...
-            ,'Rotation',15 ...
+            ,'Rotation', x_rot ...
             ,'HorizontalAlignment','right' ...
             );
         
         %ranks
         subplot(size(data.averages,2),3,((ave_plot-1)*3)+2); hold on;
-        bar( x_axis_it, mean(data.averages(ave_plot).model(model).ranks), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
+        bar( x_axis_it, mean(data.averages(ave_plot).model(model).ranks),'LineWidth',bar_line_width, 'FaceAlpha',bar_alpha, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
         plotSpread( data.averages(ave_plot).model(model).ranks , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.averages(ave_plot).model(model).models_pick,:) );
         num_options = 12;
         ylim([0 num_options]);
@@ -369,13 +725,13 @@ for ave_plot = 1:size(data.averages,2);
             ,sprintf('%s',data.averages(ave_plot).model(model).name) ...
             ,'Fontname','Arial' ...
             ,'Fontsize',12 ...
-            ,'Rotation',15 ...
+            ,'Rotation', x_rot ...
             ,'HorizontalAlignment','right' ...
             );
         
         %ll
         subplot(size(data.averages,2),3,((ave_plot-1)*3)+3); hold on;
-        bar( x_axis_it, mean(data.averages(ave_plot).model(model).ll), 'FaceAlpha',.1, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
+        bar( x_axis_it, mean(data.averages(ave_plot).model(model).ll),'LineWidth',bar_line_width, 'FaceAlpha', bar_alpha, 'FaceColor', plot_colors(data.averages(ave_plot).model(model).models_pick,:));
         plotSpread( data.averages(ave_plot).model(model).ll , 'xValues', x_axis_it, 'distributionColors',plot_colors(data.averages(ave_plot).model(model).models_pick,:) );
         set(gca,'FontSize',12,'FontName','Arial','LineWidth',2,'xtick',[]);
         ylabel('Log-likelihood');
@@ -384,14 +740,141 @@ for ave_plot = 1:size(data.averages,2);
             ,sprintf('%s',data.averages(ave_plot).model(model).name) ...
             ,'Fontname','Arial' ...
             ,'Fontsize',12 ...
-            ,'Rotation',15 ...
+            ,'Rotation', x_rot ...
             ,'HorizontalAlignment','right' ...
             );
-
+        
+        ave_accum_samples(:,x_axis_it) = data.averages(ave_plot).model(model).samples;
+        ave_accum_ll(:,x_axis_it-1) = data.averages(ave_plot).model(model).ll;
+        ave_accum_ranks(:,x_axis_it) = data.averages(ave_plot).model(model).ranks;
+        
     end;    %loop through models for this average plot
-
+    
+    %Now go back and add connector bars to indicate pairwise test results for THIS AVERAGE PLOT.
+    %Don't forget, you only need connectors for subjects versus each model if
+    %measure is sampling or ranks and you want only connectors between models
+    %for ll.
+    fprintf('')
+    pairs = nchoosek(1:size(ave_accum_samples,2),2);
+    num_pairs = size(pairs,1);
+    [a In] = sort(diff(pairs')','descend');  %lengths of connecting lines
+    line_pair_order = pairs(In,:);    %move longest connections to top
+    
+    %iterators, to standardise y locations of connector lines across graphs
+    i_samples = 1;  %for samples
+    i_ranks = 1;    %for ranks
+    i_ll = 1;   %for log likelihood
+    
+    for pair = 1:num_pairs;
+        
+        clear temp;
+        
+        %Is this a pair involving participants? (needed for samples and ranks)
+        if sum(line_pair_order(pair,:) == 1) == 1;
+            
+            %find difference between vectors for participants and this pair's model
+            temp(:,1) = ave_accum_samples(:,line_pair_order(pair,1)) - ave_accum_samples(:,line_pair_order(pair,2));
+            temp(:,2) = ave_accum_ranks(:,line_pair_order(pair,1)) - ave_accum_ranks(:,line_pair_order(pair,2));
+            
+            fig_Hs = [1 2];   %This time, it refers to the subplot column, which holds samples, ll or ranks
+            
+            %Where to put top line (samples and ranks)?
+            y_inc = .5;
+            %             ystart = num_options + y_inc*num_pairs + 2*y_inc;
+            ystart = num_options + 6*y_inc;
+            line_y_values = ystart:-y_inc:0;
+            
+            x_position_1 = line_pair_order(pair,1);
+            x_position_2 = line_pair_order(pair,2);
+            
+            correction = num_models;
+            
+            iterator = [i_samples i_ranks];
+            
+        else;   %If the contrast does NOT involve participants then it must be between models, which means we want an ll contrast instead.
+            
+            temp = ave_accum_ll(:,line_pair_order(pair,1)-1) - ave_accum_ll(:,line_pair_order(pair,2)-1);
+            
+            fig_Hs = [3];  %This time, it refers to the subplot column, which holds samples, ll or ranks
+            
+            %Where to put top line (samples and ranks)?
+            y_inc = 5;
+            ystart = ll_maxY + 15*y_inc;
+            line_y_values = ystart:-y_inc:0;
+            
+            x_position_1 = line_pair_order(pair,1);
+            x_position_2 = line_pair_order(pair,2);
+            
+            if num_models > 1;
+                correction = size(nchoosek(1:num_models,2),2);
+            else
+                correction = 1;
+            end;
+            
+            iterator = [i_ll];
+            
+            if line_pair_order(pair,1) == 5 & line_pair_order(pair,2) == 6
+                fprintf('');
+            end;
+            
+        end;    %check if col 1 (participants) included in this pair
+        
+        %Now use temp and fig_Hs to compute and draw stats results
+        for which_plot = 1:size(temp,2);
+            
+            %Get stats for this difference
+            clear bf10 pval ci stats;
+            
+            [bf10,pvals,ci,stats] = ...
+                bf.ttest( temp(:,which_plot) );
+            
+            %plot result
+            subplot(size(data.averages,2),3,((ave_plot-1)*3)+fig_Hs(which_plot)); hold on;
+            %             figure(fig_Hs(which_plot));
+            ylim([0 ystart]);
+            
+            switch_i = 0;   %did I use a line at all?
+            if pvals < 0.05/correction;
+                plot([x_position_1 x_position_2],...
+                    [line_y_values(iterator(which_plot)) line_y_values(iterator(which_plot))] ,'LineWidth',4,'Color',[0 0 0]);
+                switch_i = 1;
+            end;
+            
+            if bf10 < (1/BayesThresh);
+                plot([x_position_1 x_position_2],...
+                    [line_y_values(iterator(which_plot)) line_y_values(iterator(which_plot))],'LineWidth',2,'Color',[1 0 1]);
+                switch_i = 1;
+            end;
+            
+            if bf10 > BayesThresh;
+                plot([x_position_1 x_position_2],...
+                    [line_y_values(iterator(which_plot)) line_y_values(iterator(which_plot))],'LineWidth',1,'Color',[0 1 0]);
+                switch_i = 1;
+            end;
+            
+            %Not very elegent, but I want to control spaces between
+            %connector lines and so want to increment an iterator everytime
+            %I draw a line and use it to determine location of next line.
+            if switch_i == 1;   %If something was drawn on a plot on this round
+                
+                %Figure out which plot it was drawn on and increement that plot's iterator
+                if fig_Hs(which_plot) == 1; i_samples = i_samples + 1;
+                elseif fig_Hs(which_plot) == 2; i_ranks = i_ranks + 1;
+                else fig_Hs(which_plot) == 3; i_ll = i_ll + 1;
+                end;    %test which y position iterator requires updating on this round
+                
+            end;    %check if a line was drawn
+        end;    %loop through however many differences were computed above
+    end;    %loop through condition pairs for pairwise tests
+    
+    
 end;    %loop through average plots
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
 
 
 
@@ -426,9 +909,9 @@ for subject = 1:num_subs
     prior.nu = 1;
     
     %Subject who rated almost every face a 1 in study 4 (full)
-            if subject == 34;
-                fprintf('');
-            end;
+    if subject == 34;
+        fprintf('');
+    end;
     
     
     ll = 0;
@@ -450,7 +933,7 @@ for subject = 1:num_subs
             seq_ranks(1,data.study(run_study).model(run_model).samples(seq,subject));
         
         %update ll for this sequence
-                
+        
         %I need number of draws for this subject and sequence to compare against model
         listDraws = data.study(run_study).samples(seq,subject);
         
@@ -606,13 +1089,13 @@ else;
     
     %maxPayRank = 3;
     %I've taken the actual payments for the top three ranks .12 .08 .04,
-    %mapped them from the scale of the full price range to 0 to 100, added 1 
+    %mapped them from the scale of the full price range to 0 to 100, added 1
     %and taken the log (as we did with the price options)
-%     payoff = log([1.0067    1.0045    1.0022]+1); 
-%      payoff = [5 3 1]; 
-    payoff = [.12 .08 .04]; 
-
-%     payoff = [5 3 1 ];
+    %     payoff = log([1.0067    1.0045    1.0022]+1);
+    %      payoff = [5 3 1];
+    payoff = [.12 .08 .04];
+    
+    %     payoff = [5 3 1 ];
     % % payoff = [1 0 0 0 0 0];
     
 end;
@@ -1034,7 +1517,7 @@ if option_chars ~= 2;   %if not full pilot (which already is in doubles for some
 end;    %if not full pilot and so requires formatting
 
 %Time to loop through and process subs and sequences with models
-subs = unique(sequence_data_concatenated.ParticipantPrivateID);
+subs = unique(sequence_data_concatenated.ParticipantPrivateID,'stable');    %Get sub numbers but MAKE SURE TO MAINTAIN THEIR CORRECT ORDER (i.e., stable) so they line up correctly with number of draws or ranks and model performance will be miscomputed.
 num_subs = numel(subs);
 for subject = 1:num_subs
     
@@ -1066,8 +1549,8 @@ for subject = 1:num_subs
             %I've subtracted a 1 so that both prices and ratings will then
             %be on a 0 to 100 scale. And then I can take log(value+1) of
             %both and the smallest log transformed value of both will be zero.
-            all_ratings(:,subject) = this_rating_data.mean_Response -1; %to be returned by function
-            seq_vals(sequence,:,subject) = this_seq_Subj -1; %to be returned by function
+            all_ratings(:,subject) = this_rating_data.mean_Response - 1; %to be returned by function
+            seq_vals(sequence,:,subject) = this_seq_Subj - 1; %to be returned by function
             
         else;    %if objective values
             
@@ -1101,8 +1584,8 @@ for subject = 1:num_subs
         end;    %objective or subjective values?
         
         %get ranks
-        seq_ranks_temp = tiedrank(seq_vals(sequence,:,subject)')';
-        seq_ranks(sequence,subject) = seq_ranks_temp(1,all_output(sequence,subject));
+        seq_ranks_temp = tiedrank(seq_vals(sequence,:,subject));
+        seq_ranks(sequence,subject) = seq_ranks_temp(all_output(sequence,subject));
         
         
     end;    %Loop through sequences
