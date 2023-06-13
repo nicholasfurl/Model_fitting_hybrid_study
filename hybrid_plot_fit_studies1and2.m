@@ -6,6 +6,10 @@ cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybr
 
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\plotSpread'));
 
+%This version does not produce sensible results and there should be at
+%least one error in the function that gets participant data. I've replaced
+%this version with hybrid_plot_fit_studies1and2_ll.m
+
 %hybrid_plot_fit_studies1and2.m Based on hybrid_plot_fit_studies1and2.m, modified to fit beta parameter
 %and get log likelihood for the different "io-like" models.
 

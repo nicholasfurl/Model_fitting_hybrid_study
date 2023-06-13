@@ -7,7 +7,11 @@ cd('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybr
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\plotSpread'));
 addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\klabhub-bayesFactor-3d1e8a5'));
 
-%hybrid_plot_io_studies1and2_ll_rebar.m reorganises the order of the model
+%31 March 2023 hybrid_plot_io_studies1and2_ll.m - now removes participants
+%who Sahira says failed attention check in the two pilots (full, baseline)
+%and the adds in the three datasets from the new "high N" javascript hybrid study.
+
+%hybrid_plot_io_studies1and2_ll.m reorganises the order of the model
 %bars (and encoding in run_studies).
 
 %hybrid_plot_io_studies1and2_ll.m also paints lines onto plots showing
@@ -27,13 +31,19 @@ addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model
 %data. Hopefully these will be the figure-worthy ones in the end for the
 %Communications Psychology revisions.
 
-compute_data = 1;
+compute_data = 0;
 
 if compute_data == 1;
     
     %set up a matrix to tell the program what to run
     %put them in order you'd like to see their plots appear
-    %col1 -- 3: full pilot, 5: full,  6: ratings, 2: baseline pilot 1, 4: baseline,  7:squares, 8: timing 9 stars (Do not use 1 as a study number!)
+    %col 1 study codes:
+    %1: NOT IN USE (Do not use 1 as a study number!),
+    %2: baseline pilot 1, 3: full pilot,
+    %4: baseline, 5: full, 6: ratings,
+    %7:squares, 8: timing, 9: payoff / stars
+    %10: NEW pilot, 11: NEW
+    
     %a 1 if run model subjective continuous (col2), 3-rank money (col3), 3-rank 5/3/1 (col4)
     %then  objective continuous (col5, models_pick 4), 3-rank money (col6), 3-rank 5/3/1 (col7)
     
@@ -42,59 +52,30 @@ if compute_data == 1;
     %subjective 3-rank money (col4), objective 3-rank money (col5)
     %subjective 3-rank 5/3/1 (col6), objective 3-rank 5/3/1 (col7)
     
-    %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
-    run_studies = [ ...
-        3 1 1 1 1 1 1; ...
-        5 1 1 1 1 1 1; ...
-        6 1 1 1 1 1 1; ...
-        2 0 1 0 1 0 1; ...
-        4 0 1 0 1 0 1; ...
-        7 0 1 0 1 0 1; ...
-        8 0 1 0 1 0 1; ...
-        9 0 1 0 1 0 1; ...
-        ];
+    %     %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
+    %     run_studies = [ ...
+    %         3 1 1 1 1 1 1; ...
+    %         5 1 1 1 1 1 1; ...
+    %         6 1 1 1 1 1 1; ...
+    %         2 0 1 0 1 0 1; ...
+    %         4 0 1 0 1 0 1; ...
+    %         7 0 1 0 1 0 1; ...
+    %         8 0 1 0 1 0 1; ...
+    %         9 0 1 0 1 0 1; ...
+    %         ];
+    %     %
+    %     %     %This will create plots that average and analyse rows from run_studies
+    %     %     %Each row in run averages gives rows to be averaged for a given plot
+    %     %     %Make sure all run_studies rows for a given average have the same models
+    %     %     %computed or plot might fail or be hard to interpret
+    %     run_averages = { ...
+    %         [1 2 3]; ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
+    %         [4:8]
+    %         };
+    %     out_filename = 'hybrid_plot_allModels_rebar.mat';
+    %     %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
     %
-    %     %This will create plots that average and analyse rows from run_studies
-    %     %Each row in run averages gives rows to be averaged for a given plot
-    %     %Make sure all run_studies rows for a given average have the same models
-    %     %computed or plot might fail or be hard to interpret
-    run_averages = { ...
-        [1 2 3]; ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
-        [4:8]
-        };
-    out_filename = 'hybrid_plot_allModels_rebar.mat';
-    %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        %%%%%%%%SM Figure, models matched with their subj and obj reward-appropriate counterparts%%%%%%
-    run_studies = [ ...
-        3 1 1 0 0 0 0; ...
-        5 1 1 0 0 0 0; ...
-        6 0 0 1 1 0 0; ...
-        2 0 0 0 1 0 0; ...
-        4 0 0 0 1 0 0; ...
-        7 0 0 0 1 0 0; ...
-        8 0 0 0 1 0 0; ...
-        9 0 0 0 0 0 1; ...
-        ];
     %
-    %     %This will create plots that average and analyse rows from run_studies
-    %     %Each row in run averages gives rows to be averaged for a given plot
-    %     %Make sure all run_studies rows for a given average have the same models
-    %     %computed or plot might fail or be hard to interpret
-    run_averages = { ...
-        [1 2 3]; ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
-        [4:8]
-        };
-    out_filename = 'hybrid_plot_appropModels_rebar.mat';
-    %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
     
     
     
@@ -102,26 +83,42 @@ if compute_data == 1;
     
     
     
-    
-    
-    
-    
-    
+    %         %%%%%%%%SM Figure, models matched with their subj and obj reward-appropriate counterparts%%%%%%
+    %     run_studies = [ ...
+    %         3 1 1 0 0 0 0; ...
+    %         5 1 1 0 0 0 0; ...
+    %         6 0 0 1 1 0 0; ...
+    %         2 0 0 0 1 0 0; ...
+    %         4 0 0 0 1 0 0; ...
+    %         7 0 0 0 1 0 0; ...
+    %         8 0 0 0 1 0 0; ...
+    %         9 0 0 0 0 0 1; ...
+    %         ];
+    %     %
+    %     %     %This will create plots that average and analyse rows from run_studies
+    %     %     %Each row in run averages gives rows to be averaged for a given plot
+    %     %     %Make sure all run_studies rows for a given average have the same models
+    %     %     %computed or plot might fail or be hard to interpret
+    %     run_averages = { ...
+    %         [1 2 3]; ...  %all the studies with a phase 1 where subj and obj value models can be computed (pilot full, full, prior)
+    %         [4:8]
+    %         };
+    %     out_filename = 'hybrid_plot_appropModels_rebar.mat';
+    %     %%%%%%%%SM Figure, all combinations of values and reward scheme models%%%%%%
+    %
+    %
     
     %     % %%%%%%%For testing purposes, a simple and relatively quick arrangement
-    %     run_studies = [ ...
-    %         2 0 0 0 0 1 1;
-    %         4 0 0 0 0 1 1;
-    %         5 0 0 0 0 0 1
-    %         6 0 0 0 0 0 1
-    %         ];
+    run_studies = [ ...
+        10 1 1 1 1 1 1; ...
+        11 1 1 1 1 1 1 ...
+        ];
     
     %     %Make sure all indices on a row here use the same models
-    %     run_averages = { ...
-    %         [1 2];
-    %         [3 4]
-    %         };
-    %     out_filename = 'hybrid_plot_testRun.mat';
+    run_averages = { ...
+        [1 2];
+        };
+    out_filename = 'hybrid_plot_testRun.mat';
     %     % %%%%%%%For testing purposes, a simple and relatively quick arrangement
     
     
@@ -131,9 +128,9 @@ if compute_data == 1;
     
     
     %For posterity
-%     data.model_labels = {'Participants' 'Subj-rew1' 'Subj-rew2' 'Subj-rew3' 'Obj-rew1' 'Obj-rew2' 'Obj-rew3'};
+    %     data.model_labels = {'Participants' 'Subj-rew1' 'Subj-rew2' 'Subj-rew3' 'Obj-rew1' 'Obj-rew2' 'Obj-rew3'};
     data.model_labels = {'Participants' 'Subj-rew1' 'Obj-rew1' 'Subj-rew2' 'Obj-rew2' 'Subj-rew3' 'Obj-rew3'};
-    data.study_labels = {'' 'Baseline pilot' 'Full pilot', 'Baseline' 'Full',  'Ratings'  'Squares' 'Timing' 'Payoff'};
+    data.study_labels = {'' 'Baseline pilot' 'Full pilot', 'Baseline' 'Full',  'Ratings'  'Squares' 'Timing' 'Payoff' 'NEW pilot' 'NEW'};
     data.num_studies = numel(unique(run_studies(:,1)));
     data.run_studies = run_studies;
     data.run_averages = run_averages;
@@ -197,16 +194,29 @@ if compute_data == 1;
                 payoff_scheme = 2;
             end;
             
-            %now returns (preserving legacy variable names):
-            %"mean ratings" which is actually 90*num_subs lists of phase 1 ratings
-            %seq_vals, which is 6*8*num_subs lists of sequence values and
-            %output, which is now 6*num_subs number of subject draws for each sequence
-            [mean_ratings_all seq_vals_all output_all ranks_all] = ...
-                get_sub_data( ...
-                study_id, ...
-                subjective_vals, ...
-                payoff_scheme ...
-                );
+            if study_id < 10;   %If one of Sahira's studies
+                
+                %now returns (preserving legacy variable names):
+                %"mean ratings" which is actually 90*num_subs lists of phase 1 ratings
+                %seq_vals, which is 6*8*num_subs lists of sequence values and
+                %output, which is now 6*num_subs number of subject draws for each sequence
+                [mean_ratings_all seq_vals_all output_all ranks_all] = ...
+                    get_sub_data_old( ...
+                    study_id, ...
+                    subjective_vals, ...
+                    payoff_scheme ...
+                    );
+                
+            else;   %One of the NEW studies instead
+                
+                [mean_ratings_all seq_vals_all output_all ranks_all] = ...
+                    get_sub_data_new( ...
+                    study_id, ...
+                    subjective_vals, ...
+                    payoff_scheme ...
+                    );
+            end;
+            
             
             %participant samples
             data.study(study).samples = output_all;
@@ -276,8 +286,8 @@ else
     %     load('hybrid_plot_io_ll.mat','data'); %takes a long time to run and I might want to skip to here and load data later
     %         load('hybrid_payoff2_io_ll.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
     %     load('test_average_io_ll.mat','data');   %for twsting
-    load('hybrid_plot_allModels_rebar.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
-    %     load('hybrid_plot_testRun.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
+    %load('hybrid_plot_allModels_rebar.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
+         load('hybrid_plot_testRun.mat','data');   %introducing 5:3:1 payoffs and stars condition analysis
     
 end;    %studies
 
@@ -286,6 +296,11 @@ plot_results(data);
 
 disp('audi5000')
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%#
@@ -629,7 +644,7 @@ for pair = 1:num_pairs;
         
         ylim([0, ystart])
         set(gca,'ytick',[0:2:num_options]);
-
+        
         
     end;    %loop through graphs
 end;    %loop through pairs
@@ -1338,11 +1353,153 @@ prob_y = tpdf(sy, postProb.nu);
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [all_ratings seq_vals all_output seq_ranks] = get_sub_data_new(study, subjective_vals,payoff_scheme);
+
+%get_sub_data_new is for studies run after Sahora's thesis, in response to
+%Communications Psychology reviews. This include an N=20 pilot study and an
+%N=150 full prices study with 12 options and phase 1 ratings. Code adapted
+%from pilot3_matlab_replication_fromScratch.m.
+
+if study == 10; %N=20 pilot for NEW
+    
+    all_data = readtable('pilot_NEW\pilot-2-hybrid-seq-length-and-reward-scheme.csv');
+    all_data = all_data(:,{'name','run_id','response','price','sequence','option','rank','num_options','seq_cond','num_seqs','reward_cond','array'});
+    
+elseif study == 11; %N=150 NEW study
+    
+    % % %STUDY batch 1 (aka NEW Pilot): N=20, options=12, num_seqs=6, rating phase, continuous reward
+    all_data4_temp = readtable('NEW\batch01.csv');
+    all_data4 = all_data4_temp(:,{'name','run_id','response','price','sequence','option','rank','num_options','seq_cond','num_seqs','reward_cond','array'});
+    all_data4.run_id = all_data4.run_id + 400;  %ensure no overlapping sub numbers in different pilots
+    
+    %STUDY batch 2: N=80, options=12, num_seqs=6, rating phase, continuous reward.
+    all_data5_temp = readtable('NEW\batch02.csv');
+    all_data5 = all_data5_temp(:,{'name','run_id','response','price','sequence','option','rank','num_options','seq_cond','num_seqs','reward_cond','array'});
+    all_data5.run_id = all_data5.run_id + 500;  %ensure no overlapping sub numbers in different pilots
+    
+    
+    %STUDY batch 3: N=50, options=12, num_seqs=6, rating phase, continuous reward.
+    all_data6_temp = readtable('NEW\batch03.csv');
+    all_data6 = all_data6_temp(:,{'name','run_id','response','price','sequence','option','rank','num_options','seq_cond','num_seqs','reward_cond','array'});
+    all_data6.run_id = all_data6.run_id + 600;  %ensure no overlapping sub numbers in different pilots
+    
+    all_data = vertcat(all_data4, all_data5, all_data6);
+    
+end;
+
+
+%split off ratings data
+ratings_data = all_data(strcmp(all_data.name,'rating_trial'),{'run_id' 'price' 'response'});
+
+%split off phase 2 data where participant said stop
+phase2_data = all_data(strcmp(all_data.name,'response_prompt') & all_data.response == 0,{'run_id','response','price','sequence','option','rank','num_options','seq_cond','num_seqs','reward_cond','array'});
+
+%average the two ratingsper subject
+group_vars = {'run_id', 'price'};
+mean_ratings = grpstats(ratings_data, group_vars, 'mean');
+
+%average the number of draws over sequences per subject (all other important variables are between subs)
+group_vars = {'run_id'};
+mean_draws = grpstats(phase2_data,"run_id","mean","DataVars",["run_id","price","option","rank","num_options","seq_cond","reward_cond"]);
+
+%extract array data
+%get one example of every array
+sequenceOne = phase2_data(phase2_data.sequence==1,{'run_id','array','num_seqs','num_options','reward_cond'});
+
+for subject = 1:size(sequenceOne,1)
+    
+    %    disp(sprintf('Participant %d',sequenceOne.run_id(subject)));
+        disp(sprintf('Study id %d, subjective vals %d, payoff scheme %d, participant %d',study,subjective_vals,payoff_scheme, subs(subject)));
+
+    
+    clear array_Obj this_rating_data
+    
+    %assemble sequences for this subject
+    array_Obj = reshape(str2double(regexp(sequenceOne.array{subject}, '-?\d+(\.\d+)?', 'match')),[sequenceOne.num_options(subject), sequenceOne.num_seqs(subject)])';
+    
+    %assemble ratings data for this subject
+    %         this_rating_data = mean_ratings(mean_ratings.run_id == sequenceOne.run_id(sequence),:);   %There was a bug here in previous versions that I've fixed
+    this_rating_data = mean_ratings(mean_ratings.run_id == sequenceOne.run_id(subject),:);
+    
+    %Assemble samples for this subject (You'll compute the ranks below in the loop)
+    all_output(:,subject) = table2array(phase2_data( phase2_data.run_id == sequenceOne.run_id(subject),'option' ));
+    
+    %loop through and get data about each sequence
+    for sequence = 1:sequenceOne.num_seqs(subject);
+        
+        %accumulate in a matrix to be returned by this function.
+        %Note that values are sorted by raw price
+        if subjective_vals == 1;  %output ratings if modelling using subjective values
+            
+            %First get distribution of subjective values and save to matrix to
+            %be returned by this function
+            all_ratings(:,subject) = this_rating_data.mean_response;
+            
+            %Then get seq values transformed into subjective vals
+            
+            %Loop through options and replace price values with corresponding ratings for each participant
+            %get sub's ratings
+            clear this_seq_Subj;
+            for option=1:size(array_Obj(sequence,:),2);
+                this_seq_Subj(1,option) = table2array(this_rating_data(this_rating_data.price==array_Obj(sequence,option),'mean_response'));
+            end;    %loop through options
+            
+            %Save subjective sequence values into matrix to be returned by this function
+            seq_vals(sequence,:,subject) = this_seq_Subj;
+            
+        else;   %output the prices if modelling using objective values
+            
+            %transform values
+            old_min = 1;
+            old_max = max(this_rating_data.price);
+            new_min=1;
+            new_max = 100;
+            
+            %normalise prices vector and accumulate over subs(should be same every subject)
+            clear temp_ratings temp_seq_vals
+            temp_Obj_ratings = (((new_max-new_min)*(this_rating_data.price - old_min))/(old_max-old_min))+new_min;
+            temp_Obj_ratings = -(temp_Obj_ratings - 50) + 50;
+            
+            
+            temp_Obj_vals = (((new_max-new_min)*(array_Obj(sequence,:) - old_min))/(old_max-old_min))+new_min;
+            temp_Obj_vals = -(temp_Obj_vals - 50) + 50;
+            
+            %First Get distribution of objective values and save to matrix to
+            %be returned by this function
+            all_ratings(:,subject) = temp_Obj_ratings;
+            
+            %Save objective sequence values into matrix to be returned by this function
+            seq_vals(sequence,:,subject) = temp_Obj_vals;
+            
+        end;    %subjective or objective values?
+        
+        %Now get the rank of the chosen option, based on the participant's
+        %choice this sequence
+        this_seq_ranks = tiedrank( seq_vals(sequence,:,subject) );
+        seq_ranks(sequence,subject) = this_seq_ranks( all_output(sequence,subject) );
+        
+    end;    %Loop through sequences
+  
+end;    %Loop through subs
+
+fprintf('');
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [all_ratings seq_vals all_output seq_ranks] = get_sub_data(study, subjective_vals, payoff_scheme);
+function [all_ratings seq_vals all_output seq_ranks] = get_sub_data_old(study, subjective_vals, payoff_scheme);
+
+%get_sub_data_old is for use with Sahira's thesis studies
+%(codes 1-9 in col 1 of run_studies)
+%Use get_sub_data_new for NEW and other other new studies I need to run for
+%the communications psychology revisions
+
 
 %initialise some things that may be changed below depending on study particulars.
 %So some conditions (full pilot, full, ratings) have a preceding ratings
@@ -1369,6 +1526,7 @@ header_format = 1;
 option_chars = 0;
 
 
+excluded = [];  %initialise list of participant numbers with phse 1 attention check failures (derived froim Sahira's analysis)
 
 if study == 2;  %baseline pilot
     data_folder = 'pilot_baseline';
@@ -1377,6 +1535,7 @@ elseif study == 3;  %full pilot
     ratings_phase = 1;
     header_format = 2;     option_chars = 2;
     %payoff_scheme = 1;
+    excluded = [991920 991943 991973 991994];
 elseif study == 4;  %baseline
     data_folder = 'baseline';
 elseif study == 5;  %full
@@ -1384,9 +1543,11 @@ elseif study == 5;  %full
     ratings_phase = 1;
     header_format = 2;     option_chars = 1;
     %payoff_scheme = 1;
+    excluded = [3128771 3128949];
 elseif study == 6;  %rating phase
     data_folder = 'rating_phase';
     ratings_phase = 1;
+    excluded = [3130144 3130154 3130241 3130245 3130253 3130318];
 elseif study == 7;  %squares
     data_folder = 'squares';
 elseif study == 8;  %timimg
@@ -1441,20 +1602,22 @@ for file=1:num_sequence_files;
     
 end;    %loop through sequence files
 
-
-%average the number of draws over sequences per subject (all other important variables are between subs)
-% mean_draws = grpstats(sequence_data_concatenated,"ParticipantPrivateID","mean","DataVars",["ScreenNumber"]);
-all_output = reshape( ...
-    sequence_data_concatenated.ScreenNumber, ...
-    numel(unique(sequence_data_concatenated.TrialNumber)), ...
-    numel(unique(sequence_data_concatenated.ParticipantPrivateID)) ...
-    );
-%If it's a condition that uses the Costa & Averbeck two screen format
-%(option+response screens) then need to divide screen number by 2 to get
-%correct number of drawn options.
-if header_format == 1;
-    all_output = all_output / 2;
-end;
+%31 March 2023 - I'm moving the below commented-out code snippet into the subject loop so I
+%can exclude subjects who failed attention check
+%
+% %average the number of draws over sequences per subject (all other important variables are between subs)
+% % mean_draws = grpstats(sequence_data_concatenated,"ParticipantPrivateID","mean","DataVars",["ScreenNumber"]);
+% all_output = reshape( ...
+%     sequence_data_concatenated.ScreenNumber, ...
+%     numel(unique(sequence_data_concatenated.TrialNumber)), ...
+%     numel(unique(sequence_data_concatenated.ParticipantPrivateID)) ...
+%     );
+% %If it's a condition that uses the Costa & Averbeck two screen format
+% %(option+response screens) then need to divide screen number by 2 to get
+% %correct number of drawn options.
+% if header_format == 1;
+%     all_output = all_output / 2;
+% end;
 
 %reformat strings with £ signs in cells to be doubles
 if option_chars ~= 2;   %if not full pilot (which already is in doubles for some reason.
@@ -1518,14 +1681,28 @@ end;    %if not full pilot and so requires formatting
 
 %Time to loop through and process subs and sequences with models
 subs = unique(sequence_data_concatenated.ParticipantPrivateID,'stable');    %Get sub numbers but MAKE SURE TO MAINTAIN THEIR CORRECT ORDER (i.e., stable) so they line up correctly with number of draws or ranks and model performance will be miscomputed.
+%exclude participants from subs vector, if necessary
+subs = subs(~ismember(subs,excluded));
 num_subs = numel(subs);
+
+all_output = [];
 for subject = 1:num_subs
     
     disp(sprintf('Study id %d, subjective vals %d, payoff scheme %d, participant %d',study,subjective_vals,payoff_scheme, subs(subject)));
     
-    
     %Get objective values for this subject
     array_Obj = table2array(sequence_data_concatenated(sequence_data_concatenated.ParticipantPrivateID==subs(subject),5:end));
+    
+    %Process behavioural samples data for this participant
+    this_sub_sequence_data_concatenated = sequence_data_concatenated(sequence_data_concatenated.ParticipantPrivateID==subs(subject),:);
+    this_sub_output = this_sub_sequence_data_concatenated.ScreenNumber; %get samples data for this participant
+    %If it's a condition that uses the Costa & Averbeck two screen format
+    %(option+response screens) then need to divide screen number by 2 to get
+    %correct number of drawn options.
+    if header_format == 1;
+        this_sub_output = this_sub_output / 2;
+    end;
+    all_output(:,subject) = this_sub_output;
     
     %loop through and get io peformance for each sequence
     for sequence = 1:size(array_Obj,1);
@@ -1583,10 +1760,9 @@ for subject = 1:num_subs
             
         end;    %objective or subjective values?
         
-        %get ranks
+        %Now use participant samples, extracted above, to get participant ranks for this sequence and participant
         seq_ranks_temp = tiedrank(seq_vals(sequence,:,subject));
         seq_ranks(sequence,subject) = seq_ranks_temp(all_output(sequence,subject));
-        
         
     end;    %Loop through sequences
 end;    %Loop through subs
