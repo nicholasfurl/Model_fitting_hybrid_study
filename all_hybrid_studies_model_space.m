@@ -12,16 +12,16 @@ tic
 
 %input argument defaults
 all_draws_set = 1;          %You can toggle how the ll is computed here for all models at once if you want or go below and set different values for different models manually in structure
-subjective_vals = 1;        %Run models using subjective values (ratings) or objective values (prices)?
+subjective_vals = 0;        %Run models using subjective values (ratings) or objective values (prices)?
 payoff_scheme = 1;          %1 means continuous reward, 2 means 3-rank (5:3:1), 1 means 3-rank in Sahira's monetary proportion (Implementing only 1 for now, specific to this NEW study
 
 %What model fitting / viz steps should the programme run?
-check_params = 1;       %fit the same model that created the data and output estimated parameters
+check_params = 0;       %fit the same model that created the data and output estimated parameters
 make_est_model_data = 1;
-use_file_for_plots = 0; %Set the above to zero and this to 1 and it'll read in a file you specify (See filename_for_plots variable below) and make plots of whatever analyses are in the Generate_params structure in that file;
+use_file_for_plots = 1; %Set the above to zero and this to 1 and it'll read in a file you specify (See filename_for_plots variable below) and make plots of whatever analyses are in the Generate_params structure in that file;
 make_plots = 0;         %if 1, plots the results
 analyze_value_positions = 0;    %Create plots with psychometric curves, their thresholds (model fits) and their correlations (nbins_psi hardwired at function call)
-do_io = 1;  %If a 1, will add io performance as a final model field when make_est_model_data is switched to 1.
+do_io = 0;  %If a 1, will add io performance as a final model field when make_est_model_data is switched to 1.
 
 %What kinds of models / fits should be run?
 %1: cutoff 2: Cs 3: IO (beta only) 4: BV 5: BR 6: BPM 7: Opt 8: BPV
@@ -36,7 +36,7 @@ if use_file_for_plots ~=1;
     %     comment = 'test';
 end;
 outpath = 'C:\matlab_files\fiance\parameter_recovery\outputs';
-filename_for_plots = 'C:\matlab_files\fiance\parameter_recovery\outputs\out_test_jscriptNEW_Pay1vals1_ .mat'; %Unfortunately still needs to be typed in manually
+filename_for_plots = [outpath filesep 'out_new_ll1_out_test_jscriptNEW_Pay1vals0_20231306.mat']; %Unfortunately still needs to be typed in manually
 
 %These correspond to identifiers (not configured implementations like in v2) in the v3_sweep version
 model_names = {'Cut off' 'Cs' 'IO' 'BV' 'BR' 'BPM' 'Opt' 'BPV' }; %IO is a placeholder, don't implement
@@ -1045,11 +1045,11 @@ prob_y = tpdf(sy, postProb.nu);
     %output, which is now 6(number of sequences)*num_subs(N=151), and holds the number of subject draws for each sequence
 function [all_ratings seq_vals all_output] = get_sub_data(subjective_vals);
 
-payoff_scheme = 1;
+    payoff_scheme = 1;
 
 
-%N=150 NEW study (irresponsibly preserving some legacy variable names
-%lifted from other code)
+    %N=150 NEW study (irresponsibly preserving some legacy variable names
+    %lifted from other code)
     
     % % %STUDY batch 1 (aka NEW Pilot): N=20, options=12, num_seqs=6, rating phase, continuous reward
     all_data4_temp = readtable('NEW\batch01.csv');
