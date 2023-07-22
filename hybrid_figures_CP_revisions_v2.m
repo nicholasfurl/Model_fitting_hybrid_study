@@ -1,6 +1,11 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [] = hybrid_figures_CP_revisions_v1;
+function [] = hybrid_figures_CP_revisions_v2;
+
+%v2 reorganises things so that participants is treated like a model. It's a
+%big structural change so I've saved as v2 to preserve old structure. I
+%lazily did it halfway through change so v1 no longer works but at least I
+%can see what old form looked like if needed.
 
 %adapted from hybrid_subj_vals_model_comparison_NEW.
 
@@ -14,10 +19,10 @@ addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model
 %Numbers mean where I want a certain model index to appear in new array. So
 %putting a 6 first mean the first model in the input struct will be optimal
 %zero means participants.
-bar_order = [6 0 1 2 3 4 5];
+bar_order = [6 0 2 1 3 4 5];
 
 %4 is NEW by itself
-figure_num = 2;
+figure_num = 5;
 
 % h = figure('Color',[1 1 1]);
 
@@ -52,26 +57,37 @@ elseif figure_num == 2;
     
 elseif figure_num == 3;
     
-    
+    %pilot baseline, baseline, squares, timing and payoff
+    data{1}{1} = load([outpath filesep 'out_sahira_noIO_ll1pay3vals0study120231707.mat'] );
+    data{2}{1} = load( [outpath filesep 'out_sahira_noIO_ll1pay3vals0study320231707.mat']);
+    data{3}{1} = load( [outpath filesep 'out_sahira_noIO_ll1pay3vals0study620231807.mat']);
+    data{4}{1} = load( [outpath filesep 'out_sahira_noIO_ll1pay3vals0study720231807.mat']);
+    data{5}{1} = load([outpath filesep 'out_sahira_noIO_ll1pay2vals0study820231807.mat'] );
     
 elseif figure_num == 4;
     
     
     %NEW no io
-    data{1} = load([outpath filesep 'out_NEWnoIO_ll1pay1vals020230307.mat']); %Unfortunately still needs to be typed in manually
-    data{1} = load([outpath filesep 'out_NEWnoIO_ll1pay1vals120230307.mat']); %Unfortunately still needs to be typed in manually
+    temp = load([outpath filesep 'out_NEWnoIO_ll1pay1vals020230307.mat']);
+    data{1}{1} =  temp;
     
+    temp = load([outpath filesep 'out_NEWnoIO_ll1pay1vals120230307.mat']); %Unfortunately still needs to be typed in manually
+    data{1}{2} = temp;
     
 elseif figure_num == 5;
     
     
     % %seq leng = 1 no io
-    data{1} = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals020230707.mat']); %Unfortunately still needs to be typed in manually
-    data{1} = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals120230707.mat']); %Unfortunately still needs to be typed in manually
+    temp = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals020230707.mat']); 
+    data{1}{1} = temp;
+    temp = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals120230707.mat']);
+    data{1}{2} = temp;
     
     %seq length = 2 no io
-    data{2} = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals120230807.mat']); %Unfortunately still needs to be typed in manually
-    data{2} = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals020230807.mat']); %Unfortunately still needs to be typed in manually
+    temp = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals120230807.mat']);
+    data{2}{1} =  temp;
+    temp = load([outpath filesep 'out_SeqLennoIO_ll1pay1vals020230807.mat']);
+    data{2}{2} = temp;
     
 end;
 
@@ -136,17 +152,15 @@ function [] = plot_data(Generate_params);
 num_models_per_study = numel(Generate_params.study(1).model);
 BayesThresh = 3;
 
-%I like my participants red and my optimal models grey and the other model
-%colors can vary if they like. Red is done manually in the subject sampling
-%loop below so remove it. Add the grey here since its not in the colormap
+%io first, participants next, theoertical fitted models next
 temp = hsv(10);
-plot_cmap = [.5 .5 .5; temp(2:end,:)];  %supports up to eight model identifiers (not models per se) plus optimal (identifier 0) plus participants. Probably will use seven identifiers plus optimal plus participants
+plot_cmap = [0 0 0; .75 .75 .75; temp(1:end,:)];  %supports up to eight model identifiers (not models per se) plus optimal (identifier 0) plus participants. Probably will use seven identifiers plus optimal plus participants
 % plot_cmap = hsv(num_models_per_study+1);  %models + subjects
 f_a = 0.1; %face alpha
 sw = 1;  %ppoint spread width
-graph_font = 10;
+graph_font = 9;
 x_axis_test_offset = .05;   %What percentage of the y axis range should x labels be shifted below the x axis?
-x_rot = 45;
+x_rot = 65;
 num_panels = 3; %This means samples, parameters, BIC, frequencies
 
 %Should allow easier subplot panel rearrangement by controling these
@@ -160,56 +174,54 @@ rows = num_panels;  %subplots
 cols = Generate_params.num_studies; %subplots
 subplot_num = "((panel_num-1)*cols)+study" ;    %Will need to use eval, as study and panel_num don't exist yet
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%SAMPLES AND RANKS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%Plot samples for participants and different models
+%Samples, BIC & frequency
 h10 = figure('Color',[1 1 1]);
-% 
-% %Make array of subplot_indices
-% subplot_indices = ...
-%     reshape( ...
-%     1:Generate_params.num_panels*Generate_params.num_studies, ...
-%     Generate_params.num_panels,Generate_params.num_studies);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%SAMPLES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 for study = 1:Generate_params.num_studies;
     
     %Need to accumulate these for analyze_value_position_functions below.
-%     all_choice_trial(:,:,1) = Generate_params.study(1).num_samples'; %Should be subs*seqs*models. num_samples here (human draws) is seqs*subs
-%     model_strs = {};
-
+    %     all_choice_trial(:,:,1) = Generate_params.study(1).num_samples'; %Should be subs*seqs*models. num_samples here (human draws) is seqs*subs
+    %     model_strs = {};
+    
     clear IC_pps_all_models samples_accum;
+    human_is_index = [];    %Used for plotting significance connector lines on samples plot, because I need to know which bar is humans for significance comparison
     it_model_comparison = 1;
-
-    for this_bar = 1:num_models_per_study+1;
+    
+    for this_bar = 1:num_models_per_study;
         
         %subplot(2,2,1); hold on; %Samples plot
         panel_num = panel_nums(1);  %Panels nums can be changed colwise versus rowwise in subplot
-        subplot(rows,cols,eval(subplot_num));
+        subplot(rows,cols,eval(subplot_num)); hold on;
         
         y_string = 'Samples to decision';
         
         
-        identifier = 0;             %What's the numeric identifier for this model (used mainly for colouring bars by model identity)
-
-%         if this_bar == 1;   %If participants
-%             these_data = Generate_params.study(study).num_samples;
-%             plot_color = [1 0 0];
-%             model_label = 'Participants';
-%             
-%         else;   %if model
-            
-            these_data = Generate_params.study(study).model(this_bar-1).num_samples_est;
-            %For some reason optimal doesn't come with an identifier
-            if ~isempty(Generate_params.study(study).model(this_bar-1).identifier)
-                identifier = Generate_params.study(study).model(this_bar-1).identifier;
-            end;
-            plot_color = plot_cmap(identifier+1,:); %+2 skips the first color for participants and the second color for optimal
-            model_label = Generate_params.study(study).model(this_bar-1).name;
-        end;    %participants or model?
+        %         identifier = 0;             %What's the numeric identifier for this model (used mainly for colouring bars by model identity)
+        
+        %         if this_bar == 1;   %If participants
+        %             these_data = Generate_params.study(study).num_samples;
+        %             plot_color = [1 0 0];
+        %             model_label = 'Participants';
+        %
+        %         else;   %if model
+        
+        these_data = Generate_params.study(study).model(this_bar).num_samples_est;
+        %For some reason optimal doesn't come with an identifier
+        %             if ~isempty(Generate_params.study(study).model(this_bar).identifier)
+        identifier = Generate_params.study(study).model(this_bar).identifier;
+        %             end;
+        plot_color = plot_cmap(identifier,:); %+2 skips the first color for participants and the second color for optimal
+        model_label = Generate_params.study(study).model(this_bar).name;
+        %         end;    %participants or model?
         
         %keep data for use later on when plotting significance connector lines
+        if Generate_params.study(study).model(this_bar).identifier == 1;    %if participants
+            human_is_index = this_bar;
+        end;
         samples_accum(:,this_bar) = these_data;
         
         %average over sequences (rows) but keep sub data (cols) for scatter points
@@ -231,12 +243,13 @@ for study = 1:Generate_params.num_studies;
             ,'fontSize',graph_font ...
             ,'FontName','Arial',...
             'XLim',[0 num_models_per_study+2] ...
-            ,'YLim',[0 Generate_params.study(study).seq_length]);
+            ,'YTick',[0:2:Generate_params.study(study).seq_length]);
         ylabel(y_string);
         
         this_offset = -x_axis_test_offset*diff(ylim);
         text( this_bar, this_offset ...
             ,sprintf('%s',model_label) ...
+            ,'Color', [0 0 0] ...
             ,'Fontname','Arial' ...
             ,'Fontsize',graph_font ...
             ,'Rotation',x_rot ...
@@ -247,62 +260,7 @@ for study = 1:Generate_params.num_studies;
         
         
         
-        
-        
-        
-        
-    
-        %Still inside model (this_bar) loop. If not participants or optimality model
-%         if this_bar ~=1 & identifier ~= 0;
-        if identifier ~= 0;
-
-            
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            %%%LOG LIKELIHOOD ANALYSIS
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            
-            %             %%%%%%%%%%%%%%%%%%%%
-            %             %%%%Plot of raw ll's
-            %             subplot(2,3,4);
-            %
-            %             handles = plotSpread(Generate_params.model(this_bar-1).ll ...
-            %                 ,'xValues',this_bar ...
-            %                 ,'distributionColors',plot_color ...
-            %                 ,'distributionMarkers','.' ...
-            %                 , 'spreadWidth', sw ...
-            %                 );
-            %
-            %             bar(this_bar,nanmean(Generate_params.model(this_bar-1).ll) ...
-            %                 ,'FaceColor',plot_color ...
-            %                 ,'FaceAlpha',f_a ...
-            %                 ,'EdgeColor',[0 0 0] ...
-            %                 );
-            %
-            %             set(gca ...
-            %                 ,'XTick',[] ...
-            %                 ,'fontSize',graph_font ...
-            %                 ,'FontName','Arial',...
-            %                 'XLim',[1 Generate_params.num_models+2] ...
-            %                 );
-            %             %                     ,'YLim',[0 Generate_params.seq_length]...0
-            %             ylabel('Log-likelihood');
-            %
-            %             this_offset = -x_axis_test_offset*diff(ylim);
-            %             text( this_bar, this_offset ...
-            %                 ,sprintf('%s',model_label) ...
-            %                 ,'Fontname','Arial' ...
-            %                 ,'Fontsize',graph_font ...
-            %                 ,'Rotation',x_rot ...
-            %                 ,'HorizontalAlignment','right' ...
-            %                 );
-            
-            
-            
-            
-            
-            
-            
-            
+        if Generate_params.study(study).model(this_bar).skip == 0; %If a theoretical model and not participants or IO
             
             %%%%%%%%%%%%%%%%%%%%%%%%
             %Plot of AIC/BIC (Not so relevant if they all have two parameters though)
@@ -312,14 +270,14 @@ for study = 1:Generate_params.num_studies;
             subplot(rows,cols,eval(subplot_num));
             
             %Model IC
-            no_params = numel( Generate_params.study(study).model(this_bar-1).this_models_free_parameters ) + 1; %+1 for beta
-            lla = Generate_params.study(study).model(this_bar-1).ll;
+            no_params = numel( Generate_params.study(study).model(this_bar).this_models_free_parameters ) + 1; %+1 for beta
+            lla = Generate_params.study(study).model(this_bar).ll;
             if Generate_params.IC == 1; %If AIC (per participant)
                 IC_pps = 2*no_params + 2*lla;
                 a_label = 'AIC';
             elseif Generate_params.IC == 2; %If BIC (per participant)
                 IC_pps = no_params*log(Generate_params.study(study).num_seqs) + 2*lla;
-                a_label = 'BIC';
+                a_label = 'Bayesian information criterion';
             end;
             
             handles = plotSpread(IC_pps ...
@@ -336,31 +294,31 @@ for study = 1:Generate_params.num_studies;
                 ,'XTick',[] ...
                 ,'fontSize',graph_font ...
                 ,'FontName','Arial',...
-                'XLim',[0 num_models_per_study] ...
+                'XLim',[0 num_models_per_study-(human_is_index-1)] ...
                 );
             ylabel(a_label);
             
-            this_offset = -x_axis_test_offset*diff(ylim);
-            text( it_model_comparison, this_offset ...
-                ,sprintf('%s',model_label) ...
-                ,'Fontname','Arial' ...
-                ,'Fontsize',graph_font ...
-                ,'Rotation',x_rot ...
-                ,'HorizontalAlignment','right' ...
-                );
+            %I moved this to after the significance lines have been added,
+            %where the y lim has been finalized
+%             this_offset = -x_axis_test_offset*5*diff(ylim);
+%             text( it_model_comparison, this_offset ...
+%                 ,sprintf('%s',model_label) ...
+%                 ,'Fontname','Arial' ...
+%                 ,'Fontsize',graph_font ...
+%                 ,'Rotation',x_rot ...
+%                 ,'HorizontalAlignment','right' ...
+%                 );
             
-            %We need to accumulate these data over models in this loop to do the
-            %next step more easily
-            IC_pps_all_models(:,it_model_comparison) = IC_pps';
-            
+            %Some housekeeping
+            IC_pps_all_models(:,it_model_comparison) = IC_pps'; %We need to accumulate these data over models in this loop to do the next step more easily
             it_model_comparison = it_model_comparison + 1;
             
             %These we need to accumulate so they can be passed into
             %analyze_value_position_functions below
-%             all_choice_trial(:,:,this_bar) = Generate_params.study(study).model(this_bar-1).num_samples_est';
-%             model_strs{this_bar-1} = Generate_params.study(study).model(this_bar-1).name;
+            %             all_choice_trial(:,:,this_bar) = Generate_params.study(study).model(this_bar-1).num_samples_est';
+            %             model_strs{this_bar-1} = Generate_params.study(study).model(this_bar-1).name;
             
-%         end;    %If not participants (this bar ~=1)
+        end;    %If a theoretical model (i.e., skip == 0)
         
     end;    %loop through models
     
@@ -377,10 +335,13 @@ for study = 1:Generate_params.num_studies;
     %%%%%%%%%"win" frequency plots
     
     
-    %samples then BIC significance lines
+    %significance lines
     if num_models_per_study ~= 1;
         
-        %%%First add pairwise test lines to SAMPLES plot. Connecting just
+        %%%%%%%%%%%%%%%%%%
+        %Samples significance lines
+        
+        %Connecting just
         %%%participants with all models,
         %%%but no need for models with each other
         
@@ -391,23 +352,31 @@ for study = 1:Generate_params.num_studies;
         %get the pairs connecting participants to models and set up their y axis locations
         num_pairs = size(samples_accum,2);  %This means the number of pairs is just the number of cols in the samples matrix (minus the first)
         y_inc = .5;
-        ystart = max(max(samples_accum)) + y_inc*num_pairs +y_inc;
+        
+        %OK, seems weird, but I'm fixing the maximum height of the Y axis
+        %to 14 samples, which is the largest sequence length across all the
+        %studies (Seq study 2) so that all bars are on the same scale and
+        %can be compared across studies. But I'll still number the X ticks
+        %differently depending on sequence length.
+%         ystart = max(max(samples_accum(:,1:human_is_index))) + y_inc*human_is_index +y_inc;
+%         ystart = Generate_params.study(study).seq_length + y_inc*human_is_index +y_inc;
+        ystart = 14 + y_inc*human_is_index +y_inc;
         %     line_y_values = ystart:-y_inc:0;
-        line_y_values = (0:y_inc:ystart) + (max(max(samples_accum)) + y_inc);
+        line_y_values = (0:y_inc:ystart) + (max(max(samples_accum)) + 2*y_inc);
         
         %loop through pairs, get "significance" of each, plot them
-        for pair = num_pairs:-1:1;
+%         for pair = num_pairs:-1:1;
+        for pair = human_is_index:-1:1;
+
             
             [bf10(pair),samples_pvals(pair),ci,stats] = ...
-                bf.ttest( samples_accum(:,1) - samples_accum(:,pair) );
+                bf.ttest( samples_accum(:,human_is_index) - samples_accum(:,pair) );
             
             %             bf.ttest( samples_accum(:,1) - samples_accum(:,num_pairs + 2 - pair) );
-            
-            set(gca,'Ylim',[0 ystart]);
-            
+
             %distance on plot
             %         distance_on_plot = [1 num_pairs + 2 - pair];
-            distance_on_plot = [1 pair];
+            distance_on_plot = [human_is_index pair];
             
             %             if samples_pvals(pair) < 0.05/num_pairs;
             %                 plot(distance_on_plot,...
@@ -416,16 +385,18 @@ for study = 1:Generate_params.num_studies;
             
             if bf10(pair) < (1/BayesThresh);
                 plot(distance_on_plot,...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[1 0 1]);
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1.5,'Color',[1 0 1]);
             end;
             if bf10(pair) > BayesThresh;
                 plot(distance_on_plot,...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 1 0]);
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[0 0 0]);
             end;
             
             
         end;   %pairs: Loop through comparisons between participants and models
-        
+        %Set Y lim to 14 + space for sig bars but y ticks to count the real
+        %sequene length.
+        set(gca,'Ylim',[0 ystart],'YTick',[0:2:Generate_params.study(study).seq_length]);
         
         
         
@@ -444,8 +415,9 @@ for study = 1:Generate_params.num_studies;
         subplot(rows,cols,eval(subplot_num));
         
         pairs = nchoosek(1:size(IC_pps_all_models,2),2);
+        pairs= sortrows(pairs(:,[2 1]),'descend');
         num_pairs = size(pairs,1);
-        [a In] = sort(diff(pairs')','descend');  %lengths of connecting lines
+%         [a In] = sort(diff(pairs')','descend');  %lengths of connecting lines
         %         line_pair_order = pairs(In,:);    %move longest connections to top
         line_pair_order = pairs;    %move longest connections to top
         
@@ -462,42 +434,88 @@ for study = 1:Generate_params.num_studies;
         
         for pair = 1:num_pairs;
             
-            [bf10(pair),IC_pp_pvals(pair),ci,stats] = ...
-                bf.ttest( IC_pps_all_models(:,line_pair_order(pair,1)) ...
-                - IC_pps_all_models(:,line_pair_order(pair,2)) );
-            
-            yticks = linspace(0, ceil(max_y/20)*20,5);
-            set(gca,'Ylim',[0 ystart],'YTick',yticks);
-            
-            if bf10(pair) < (1/BayesThresh);
-                plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[1 0 1]);
-            end;
-            if bf10(pair) > BayesThresh;
-                plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 1 0]);
-            end;
             
             
-            %             %run ttest this pair
-            %             [h IC_pp_pvals(pair) ci stats] = ttest(IC_pps_all_models(:,line_pair_order(pair,1)), IC_pps_all_models(:,line_pair_order(pair,2)));
+            
+            %             %%%%%Bayes Factors
+            %             [bf10(pair),IC_pp_pvals(pair),ci,stats] = ...
+            %                 bf.ttest( IC_pps_all_models(:,line_pair_order(pair,1)) ...
+            %                 - IC_pps_all_models(:,line_pair_order(pair,2)) );
             %
-            %             %plot result
-            %             %             subplot(2,4,6); hold on;
-            %             set(gca,'Ylim',[0 ystart]);
+            %             yticks = linspace(0, ceil(max_y/20)*20,5);
+            %             set(gca,'Ylim',[0 ystart],'YTick',yticks);
             %
-            %             if IC_pp_pvals(pair) < 0.05/size(pairs,1);  %multiple comparison corrected
+            %             if bf10(pair) < (1/BayesThresh);
+            %                 plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
+            %                     [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[1 0 1]);
+            %             end;
+            %             if bf10(pair) > BayesThresh;
+            %
+            %                 %find identifier of the rightmost model in the pair
+            %                 rightmost_num = line_pair_order(pair,2);    %This is an index into IC_pps_all_models which excludes IO and Human
+            %                 rightmost_id = Generate_params.study(study).model(line_pair_order(pair,2)+human_is_index).identifier;
+            %                 rightmost_color = plot_cmap(rightmost_id,:);    %color associated with identifer of rightmost model in pairwise comparison
             %
             %                 plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
-            %                     [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 0 0]);
+            %                     [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',rightmost_color);
+            % %                     [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 1 0]); %plot "significant" connector lines in a color like green
+            %             end;  %"significant"?
+       %end;    %loop through pairs for Bayesian pairwise tests
             
-            %             end;    %Do line on plot?;
+
+            
+            
+            
+            
+%             %%%%%Frequentist t-test (multiple comparison corrected)
+            %run ttest this pair
+            [h IC_pp_pvals(pair) ci stats] = ttest(IC_pps_all_models(:,line_pair_order(pair,1)), IC_pps_all_models(:,line_pair_order(pair,2)));
+            
+            ls_inc = 20;
+            num_ticks = 4;
+            yticks = round(linspace(0, ceil(max_y/ls_inc)*ls_inc,4));
+                        set(gca,'Ylim',[0 ystart],'YTick',yticks);
+            
+            if IC_pp_pvals(pair) < 0.05/size(pairs,1);  %multiple comparison corrected
+                
+                
+                %%find identifier of the rightmost model in the pair
+                rightmost_num = line_pair_order(pair,2);    %This is an index into IC_pps_all_models which excludes IO and Human
+                rightmost_id = Generate_params.study(study).model(line_pair_order(pair,2)+human_is_index).identifier;
+                rightmost_color = plot_cmap(rightmost_id,:);    %color associated with identifer of rightmost model in pairwise comparison
+                
+                
+                plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',rightmost_color);
+                %                                 [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 0 0]);
+                
+            end;    %Do line on plot?;
             
         end;    %loop through ttest pairs
         
     end;    %Only compute ttests if there is at least one pair of models
     
     
+
+
+    
+    %This works better here, despite the inelegent extra loop, because the
+    %y lim has been fixed for certain by this point so I can saftely make
+    %the distance of the text from the X axis be dependent on the Y limit
+    %(e.g., the x axis labels won't end up with variable diustances as the
+    %plot evolves over model iterations).
+    for model = 1:size(IC_pps_all_models,2)
+        
+        this_offset = -x_axis_test_offset*diff(ylim);
+        text( model, this_offset ...
+            ,sprintf('%s',Generate_params.study(study).model(model+human_is_index).name) ...
+            ,'Fontname','Arial' ...
+            ,'Fontsize',graph_font ...
+            ,'Rotation',x_rot ...
+            ,'HorizontalAlignment','right' ...
+            );
+        
+    end;    %loop through models to add x tick labels to BIC plot
     
     
     
@@ -505,7 +523,7 @@ for study = 1:Generate_params.num_studies;
     %%%%%%%%%%%%%%%%%%%%%%
     %Plot of numbers of winning subs for each model
     
-%     subplot(Generate_params.num_panels,Generate_params.num_studies,subplot_indices(4,study));
+    %     subplot(Generate_params.num_panels,Generate_params.num_studies,subplot_indices(4,study));
     %     subplot(2,3,6);
     panel_num = panel_nums(3);  %Panels nums can be changed colwise versus rowwise in subplot
     subplot(rows,cols,eval(subplot_num));
@@ -515,36 +533,44 @@ for study = 1:Generate_params.num_studies;
     [a pps_indices] = min(IC_pps_all_models');
     
     model_it = 0;
-    for model = 1:num_models_per_study;
+    for model = 1:num_models_per_study-human_is_index;
         
-        %skip empty identifiers/ optimal
-        if isempty(Generate_params.study(study).model(model).identifier);
-            continue;
-        else
-            model_it = model_it + 1;
-        end;
+        %         %skip empty identifiers/ optimal
+        %         if isempty(Generate_params.study(study).model(model).identifier);
+        %             continue;
+        %         else
+%         model_it = model_it + 1;
+        %         end;
         
-        bar(model_it,numel(find(pps_indices==model_it)), ...
-            'FaceColor', plot_cmap(Generate_params.study(study).model(model).identifier+2,:),'FaceAlpha',f_a,'EdgeColor',[0 0 0] );
+        bar(model,numel(find(pps_indices==model)), ...
+            'FaceColor', plot_cmap(Generate_params.study(study).model(model+human_is_index).identifier,:),'FaceAlpha',f_a+.2,'EdgeColor',[0 0 0] );
+        %             'FaceColor', plot_cmap(Generate_params.study(study).model(model).identifier,:),'FaceAlpha',f_a,'EdgeColor',[0 0 0] );
         
         set(gca ...
             ,'XTick',[] ...
             ,'fontSize',graph_font ...
             ,'FontName','Arial',...
-            'XLim',[0 num_models_per_study] ...
+            'XLim',[0 num_models_per_study-(human_is_index-1)] ...
             );
         ylabel('Frequency');
         
+    end;    %models
+    
+    %Like above, it's embarrassing inelegtn to repeat a loop just
+    %completed, but I need the max frequency and therefore the ylim to be
+    %finalised or I'll end up with different diustances from the x axis here
+    for model = 1:num_models_per_study-human_is_index;
+        
         this_offset = -x_axis_test_offset*diff(ylim);
-        text( model_it, this_offset ...
-            ,sprintf('%s',Generate_params.study(study).model(model).name) ...
+        text( model, this_offset ...
+            ,sprintf('%s',Generate_params.study(study).model(model+human_is_index).name) ...
             ,'Fontname','Arial' ...
             ,'Fontsize',graph_font ...
             ,'Rotation',x_rot ...
             ,'HorizontalAlignment','right' ...
             );
         
-    end;    %models
+    end;
     
     
 end;    %loop through studies
@@ -570,18 +596,23 @@ end;    %loop through studies
 % function New_struct = combineModels(New_struct_SV, New_struct_OV);
 function New_struct = combineModels(data, bar_order);
 
-%This takes the subjective values struct and the objective values struct and 
+%I'm making it so identifier 1 is participants, iderntifier 2 is ideal
+%observer and the rest of the identifiers (which in original struct were integers 1
+%or greater) are now added a two to make room for participants and ideal
+%observer. The identifiers in hybrid_figures* are used to access color maps
+
+%This takes the subjective values struct and the objective values struct and
 %makes a combined struct from them, with some formastting to prepare it for
 %figure-worthy plotting
 
 %bar_order gives the new model type order for the bars. SV and OV model
 %types like Cs for example will be placed together in position defined (for both value type) by
-%bar_orde. Each index in bar order refers to number in bar_order refers to 
+%bar_orde. Each index in bar order refers to number in bar_order refers to
 %the position in the new struct and the number at that index refers to the
 %position in the old array. If a zero appears in an index position, then
 %that means put the participant samples data there instead of a model.
 
-%Basically, for the intended procedure, the idea is to move optimal from the 
+%Basically, for the intended procedure, the idea is to move optimal from the
 %sixth position to the first and insert participants after optimal and then
 %have the theoretical models follow.
 
@@ -596,6 +627,11 @@ New_struct.num_models = size(data{1}.model,2);
 
 %concatenate models
 % for model = 1:New_struct.num_models;
+if num_datasets == 2;
+    model_name_suffix = {'SV','OV'};
+else
+    model_name_suffix = {'OV'};
+end;
 it_bar_order = 1;
 for model = 1:numel(bar_order);
     
@@ -603,15 +639,59 @@ for model = 1:numel(bar_order);
         
         %Put participants' samples data in free model location
         temp(it_bar_order).num_samples_est = data{1}.num_samples;
-        temp(it_bar_order).identifier = "Human"
+        temp(it_bar_order).identifier = 1;
+        temp(it_bar_order).name = "Human";
+        temp(it_bar_order).skip = 1;    %1 will tell BIC and frequency plotters to ignore participants
+        
+        %set up for next model entry in next loop iteration
         it_bar_order = it_bar_order + 1;
         
     else
         
         for dataset = 1:num_datasets;
             
+            %Assign sample data for this model and dataset
             %         temp(((model-1)*num_datasets)+dataset) = data{dataset}.model(bar_order(model));
-            temp(it_bar_order) = data{dataset}.model(bar_order(model));
+            %             temp(it_bar_order) = data{dataset}.model(bar_order(model));
+            temp(it_bar_order).this_models_free_parameters = data{dataset}.model(bar_order(model)).this_models_free_parameters;
+            temp(it_bar_order).estimated_params = data{dataset}.model(bar_order(model)).estimated_params;
+            temp(it_bar_order).ll = data{dataset}.model(bar_order(model)).ll;
+            temp(it_bar_order).num_samples_est = data{dataset}.model(bar_order(model)).num_samples_est;
+            
+            %Let's do some reformatting of labels to facilitate plotting later
+            if bar_order(model) == 6;   %If optimality model
+                
+                temp(it_bar_order).identifier = 2;  %Humans are 1, ideal observer is 2
+                temp(it_bar_order).name = sprintf("IO %s",model_name_suffix{dataset});
+                temp(it_bar_order).skip = 1;    %1 will tell BIC and frequency plotters to ignore IO
+                
+            elseif bar_order(model) == 1;   %If cut-off model
+                
+                temp(it_bar_order).identifier =  data{dataset}.model(bar_order(model)).identifier + 2; %make two spaces for humans and io
+                temp(it_bar_order).name = sprintf("CO %s",model_name_suffix{dataset});    %shorten name and add suffix
+                temp(it_bar_order).skip = 0;    %0 will tell BIC and frequency plotters to plot this as a theoretical model
+                
+           elseif bar_order(model) == 2;   %If Cs model (only want to slightly modify name to conform to others' format)
+                
+                temp(it_bar_order).identifier =  data{dataset}.model(bar_order(model)).identifier + 2; %make two spaces for humans and io
+                temp(it_bar_order).name = sprintf("CS %s",model_name_suffix{dataset});    %shorten name and add suffix
+                temp(it_bar_order).skip = 0;    %0 will tell BIC and frequency plotters to plot this as a theoretical model
+                
+           elseif bar_order(model) == 3;   %If Optimism model (only want to slightly modify name so readers don't confuse Opt with optimal)
+                
+                temp(it_bar_order).identifier =  data{dataset}.model(bar_order(model)).identifier + 2; %make two spaces for humans and io
+                temp(it_bar_order).name = sprintf("O %s",model_name_suffix{dataset});    %shorten name and add suffix
+                temp(it_bar_order).skip = 0;    %0 will tell BIC and frequency plotters to plot this as a theoretical model
+                
+            else;   %If any other model (i.e., BV, BR
+                
+                temp(it_bar_order).identifier =  data{dataset}.model(bar_order(model)).identifier + 2; %make two spaces for humans and io
+                temp(it_bar_order).name = sprintf("%s %s",data{dataset}.model(bar_order(model)).name, model_name_suffix{dataset});    %shorten name and add suffix
+                temp(it_bar_order).skip = 0;    %0 will tell BIC and frequency plotters to plot this as a theoretical model
+                
+            end;
+            
+            %set up for next model entry in next loop iteration
             it_bar_order = it_bar_order + 1;
             
         end;    %loop sv. ov datasets

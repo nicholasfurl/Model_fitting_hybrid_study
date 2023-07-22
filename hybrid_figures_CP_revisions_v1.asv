@@ -13,7 +13,8 @@ addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model
 %Orders will be duplicated across objective and subjective values, if both exist
 %Numbers mean where I want a certain model index to appear in new array. So
 %putting a 6 first mean the first model in the input struct will be optimal
-bar_order = [6 1 2 3 4 5];
+%zero means participants.
+bar_order = [6 0 1 2 3 4 5];
 
 %4 is NEW by itself
 figure_num = 2;
@@ -89,7 +90,7 @@ for study = 1:num_studies;
         %Takes list of file paths and then concatenates the data for the models.
         %Different from combineModels, which treats the same models from different files as
         %though they were different.
-        combined_data{dataset} = combineStudies(data{study}{dataset});
+        combined_data{dataset} = reformatData(data{study}{dataset});
         
     end;
     
@@ -406,18 +407,18 @@ for study = 1:Generate_params.num_studies;
             %         distance_on_plot = [1 num_pairs + 2 - pair];
             distance_on_plot = [1 pair];
             
-            if samples_pvals(pair) < 0.05/num_pairs;
-                plot(distance_on_plot,...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 0 0]);
-            end;
+            %             if samples_pvals(pair) < 0.05/num_pairs;
+            %                 plot(distance_on_plot,...
+            %                     [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 0 0]);
+            %             end;
             
             if bf10(pair) < (1/BayesThresh);
                 plot(distance_on_plot,...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[1 0 1]);
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[1 0 1]);
             end;
             if bf10(pair) > BayesThresh;
                 plot(distance_on_plot,...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[0 1 0]);
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 1 0]);
             end;
             
             
@@ -435,38 +436,60 @@ for study = 1:Generate_params.num_studies;
         %%%%%%%%%%%%%%%%%%
         %BIC significance lines
         %run and plot ttests on IC averages
-
+        
         %return to BIC subplot
         panel_num = panel_nums(2);  %Panels nums can be changed colwise versus rowwise in subplot
         subplot(rows,cols,eval(subplot_num));
-
+        
         pairs = nchoosek(1:size(IC_pps_all_models,2),2);
         num_pairs = size(pairs,1);
         [a In] = sort(diff(pairs')','descend');  %lengths of connecting lines
         %         line_pair_order = pairs(In,:);    %move longest connections to top
         line_pair_order = pairs;    %move longest connections to top
-
         
+        
+        %         %Where to put top line?
+        %         y_inc = 2;
+        %         ystart = max(max(IC_pps_all_models)) + y_inc*num_pairs;
+        %         line_y_values = ystart:-y_inc:0;
         %Where to put top line?
-        y_inc = 2;
-        ystart = max(max(IC_pps_all_models)) + y_inc*num_pairs;
+        max_y = max(max(IC_pps_all_models));
+        y_inc = .065*max_y;
+        ystart = max_y + y_inc*num_pairs;
         line_y_values = ystart:-y_inc:0;
         
         for pair = 1:num_pairs;
             
-%             %run ttest this pair
-%             [h IC_pp_pvals(pair) ci stats] = ttest(IC_pps_all_models(:,line_pair_order(pair,1)), IC_pps_all_models(:,line_pair_order(pair,2)));
-%             
-%             %plot result
-%             %             subplot(2,4,6); hold on;
-%             set(gca,'Ylim',[0 ystart]);
-%             
-%             if IC_pp_pvals(pair) < 0.05/size(pairs,1);  %multiple comparison corrected
-%                 
-%                 plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
-%                     [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 0 0]);
-                
-            end;    %Do line on plot?;
+            [bf10(pair),IC_pp_pvals(pair),ci,stats] = ...
+                bf.ttest( IC_pps_all_models(:,line_pair_order(pair,1)) ...
+                - IC_pps_all_models(:,line_pair_order(pair,2)) );
+            
+            yticks = linspace(0, ceil(max_y/20)*20,5);
+            set(gca,'Ylim',[0 ystart],'YTick',yticks);
+            
+            if bf10(pair) < (1/BayesThresh);
+                plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[1 0 1]);
+            end;
+            if bf10(pair) > BayesThresh;
+                plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 1 0]);
+            end;
+            
+            
+            %             %run ttest this pair
+            %             [h IC_pp_pvals(pair) ci stats] = ttest(IC_pps_all_models(:,line_pair_order(pair,1)), IC_pps_all_models(:,line_pair_order(pair,2)));
+            %
+            %             %plot result
+            %             %             subplot(2,4,6); hold on;
+            %             set(gca,'Ylim',[0 ystart]);
+            %
+            %             if IC_pp_pvals(pair) < 0.05/size(pairs,1);  %multiple comparison corrected
+            %
+            %                 plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
+            %                     [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',[0 0 0]);
+            
+            %             end;    %Do line on plot?;
             
         end;    %loop through ttest pairs
         
@@ -545,6 +568,21 @@ end;    %loop through studies
 % function New_struct = combineModels(New_struct_SV, New_struct_OV);
 function New_struct = combineModels(data, bar_order);
 
+%This takes the subjective values struct and the objective values struct and 
+%makes a combined struct from them, with some formastting to prepare it for
+%figure-worthy plotting
+
+%bar_order gives the new model type order for the bars. SV and OV model
+%types like Cs for example will be placed together in position defined (for both value type) by
+%bar_orde. Each index in bar order refers to number in bar_order refers to 
+%the position in the new struct and the number at that index refers to the
+%position in the old array. If a zero appears in an index position, then
+%that means put the participant samples data there instead of a model.
+
+%Basically, for the intended procedure, the idea is to move optimal from the 
+%sixth position to the first and insert participants after optimal and then
+%have the theoretical models follow.
+
 %subjective and objective value models? Or only objective values models?
 num_datasets = size(data,2);
 
@@ -555,39 +593,29 @@ New_struct.num_seqs = data{1}.num_seqs;
 New_struct.num_models = size(data{1}.model,2);
 
 %concatenate models
-for model = 1:New_struct.num_models;
+% for model = 1:New_struct.num_models;
+it_bar_order = 1;
+for model = 1:numel(bar_order);
     
-    for dataset = 1:num_datasets;
+    if bar_order(model) == 0;
         
-        temp(((model-1)*num_datasets)+dataset) = data{dataset}.model(bar_order(model));
+        %Put participants' samples data in free model location
+        temp(it_bar_order).num_samples_est = data{1}.num_samples;
+        it_bar_order = it_bar_order + 1;
+        
+    else
+        
+        for dataset = 1:num_datasets;
+            
+            %         temp(((model-1)*num_datasets)+dataset) = data{dataset}.model(bar_order(model));
+            temp(it_bar_order) = data{dataset}.model(bar_order(model));
+            it_bar_order = it_bar_order + 1;
+            
+        end;    %loop sv. ov datasets
+        
+    end; %check if participants spot in bar order
     
-    end;
-    
-end;
-
-
-% 
-% % temp = [];
-% it = 1;
-% for dataset = 1:num_datasets;
-%     
-%     temp=[]
-%     for model = 1:New_struct.num_models;
-%         
-%         
-%         
-%         %slot model into correct position for bar graph later
-%         which_index = ((dataset-1)*New_struct.num_models)+bar_order(model);
-%         which_index
-%         %temp(which_index) = data{dataset}.model(model);
-%         
-%     end;    %loop through models
-%     
-%     
-%     %     temp = [temp data{dataset}.model(bar_order)];
-% end;
-
-%Now the
+end;    %loop through bar order indices (locations in new struct)
 
 New_struct.model = temp;
 
@@ -605,7 +633,10 @@ fprintf('');
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function New_data_struct = combineStudies(data);
+function New_data_struct = reformatData(data);
+
+%Makes a simplified struct from the data that's easier to combine between
+%subjective anbd objective values in the next step
 
 %I've just copied this straight from combine_hybrid_objective_v3 then modified it to fit new context
 
