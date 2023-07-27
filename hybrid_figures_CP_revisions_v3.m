@@ -22,7 +22,9 @@ addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model
 %Numbers mean where I want a certain model index to appear in new array. So
 %putting a 6 first mean the first model in the input struct will be optimal
 %zero means participants.
-bar_order = [6 0 2 1 3 4 5];
+%bar_order = [6 0 2 1 3 4 5];
+bar_order = [6 0 1 2 4 5 3];    %to match hybrid_paper_parameter_recovery.m
+
 
 %Master control switch! Which figure do I want to make! 
 %It's possible paper figure nums may change later but in THIS code:
@@ -374,8 +376,8 @@ function [] = plot_data(Generate_params);
 BayesThresh = 3;
 
 %io first, participants next, theoertical fitted models next
-temp = hsv(10);
-plot_details.plot_cmap = [0 0 0; .75 .75 .75; temp(1:end,:)];  %supports up to eight model identifiers (not models per se) plus optimal (identifier 0) plus participants. Probably will use seven identifiers plus optimal plus participants
+temp = hsv(9);
+plot_details.plot_cmap = [0 0 0; .75 .75 .75; temp(2:end,:)];  %supports up to eight model identifiers (not models per se) plus optimal (identifier 0) plus participants. Probably will use seven identifiers plus optimal plus participants
 % plot_cmap = hsv(num_models_per_study+1);  %models + subjects
 plot_details.f_a = 0.1; %face alpha
 plot_details.sw = 1;  %ppoint spread width
