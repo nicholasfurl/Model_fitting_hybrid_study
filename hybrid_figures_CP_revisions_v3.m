@@ -28,7 +28,7 @@ bar_order = [6 0 1 2 4 5 3];    %to match hybrid_paper_parameter_recovery.m
 
 %Master control switch! Which figure do I want to make! 
 %It's possible paper figure nums may change later but in THIS code:
-figure_num = 2;
+figure_num = 5;
 
 % h = figure('Color',[1 1 1]);
 
@@ -44,10 +44,10 @@ file_paths = {...
     [outpath filesep 'out_sahira_noIO_ll1pay3vals0study120231707.mat']
     [outpath filesep 'out_sahira_noIO_ll1pay1vals1study220231007.mat']
     [outpath filesep 'out_sahira_noIO_ll1pay1vals0study220231007.mat']
-    [outpath filesep 'out_sahira_noIO_ll1pay1vals1study420231107.mat']
-    [outpath filesep 'out_sahira_noIO_ll1pay1vals0study420231107.mat']
     [outpath filesep 'out_sahira_noIO_ll1pay3vals1study520231207.mat']
     [outpath filesep 'out_sahira_noIO_ll1pay3vals0study520231207.mat']
+    [outpath filesep 'out_sahira_noIO_ll1pay1vals1study420231107.mat']
+    [outpath filesep 'out_sahira_noIO_ll1pay1vals0study420231107.mat']
     [outpath filesep 'out_sahira_noIO_ll1pay3vals0study320231707.mat']
     [outpath filesep 'out_sahira_noIO_ll1pay3vals0study620231807.mat']
     [outpath filesep 'out_sahira_noIO_ll1pay3vals0study720231807.mat']
@@ -63,10 +63,10 @@ study_names = {...
     'Pilot baseline'
     'Pilot full'
     'Pilot full'
-    'Study 1 full'
-    'Study 1 full'
     'Study 1 ratings'
     'Study 1 ratings'
+    'Study 1 full'
+    'Study 1 full'
     'Study 1 baseline'
     'Study 1 squares'
     'Study 1 timing'
@@ -243,6 +243,7 @@ for pair = 1:num_pairs;
         
     end;
     
+%     BayesThresh = 10;
     if bf10(pair) < (1/BayesThresh);
         plot([line_pair_order(pair,1)+start_bar line_pair_order(pair,2)+start_bar],...
             [line_y_values(pair) line_y_values(pair)],'LineWidth',1.5,'Color',[1 0 1]);
@@ -254,6 +255,7 @@ for pair = 1:num_pairs;
         
     end;  %"significant"?
 end;    %loop through pairs for Bayesian pairwise tests
+fprintf('');
 %%%%%%%%%%%%%%%%add_sig_to_behav_plot%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -287,6 +289,9 @@ for study = 1:num_studies;
     these_data = nanmean(data{study}.Generate_params.num_samples)';
     plot_color = [0 0 0];
     study_label = data{study}.Generate_params.study_name;
+    
+    %Make faint guidlines for sig connector lines
+    plot([this_bar_num this_bar_num],[nanmean(these_data) 8000],'Color',[.9 .9 .9], 'LineWidth',.25);
 
     %average over sequences (rows) but keep sub data (cols) for scatter points
     handles = plotSpread(these_data ...
@@ -461,7 +466,9 @@ for study = 1:Generate_params.num_studies;
                 IC_pps = 2*no_params + 2*lla;
                 a_label = 'AIC';
             elseif Generate_params.IC == 2; %If BIC (per participant)
-                IC_pps = no_params*log(Generate_params.study(study).num_seqs) + 2*lla;
+                sum_draws = Generate_params.study(study).num_samples.*Generate_params.study(study).num_seqs;
+                IC_pps = no_params.*sum_draws + 2*lla;
+%                 IC_pps = no_params*log(Generate_params.study(study).num_seqs) + 2*lla;
                 a_label = 'Bayesian information criterion';
             end;
             
@@ -566,11 +573,11 @@ for study = 1:Generate_params.num_studies;
             
             if bf10(pair) < (1/BayesThresh);
                 plot(distance_on_plot,...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1.5,'Color',[.75 .75 .75]);
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1.5,'Color',[0 0 0]);   %black lines mean equivalent means
             end;
             if bf10(pair) > BayesThresh;
                 plot(distance_on_plot,...
-                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[0 0 0]);
+                    [line_y_values(pair) line_y_values(pair)],'LineWidth',1,'Color',[0.75 0.75 0.75]);   %grey lines mean significant differences
             end;
             
             
@@ -636,9 +643,10 @@ for study = 1:Generate_params.num_studies;
             
             
             %%%%%Bayes Factors
+            diffs = IC_pps_all_models(:,line_pair_order(pair,1)) ...
+                - IC_pps_all_models(:,line_pair_order(pair,2));
             [bf10(pair),IC_pp_pvals(pair),ci,stats] = ...
-                bf.ttest( IC_pps_all_models(:,line_pair_order(pair,1)) ...
-                - IC_pps_all_models(:,line_pair_order(pair,2)) );
+                bf.ttest( diffs );
             
             yticks = linspace(0, ceil(max_y/20)*20,5);
             set(gca,'Ylim',[0 ystart],'YTick',yticks);
@@ -649,10 +657,14 @@ for study = 1:Generate_params.num_studies;
             end;
             if bf10(pair) > BayesThresh;
                 
-                %find identifier of the rightmost model in the pair
-                rightmost_num = line_pair_order(pair,2);    %This is an index into IC_pps_all_models which excludes IO and Human
-                rightmost_id = Generate_params.study(study).model(line_pair_order(pair,2)+human_is_index).identifier;
-                rightmost_color = plot_details.plot_cmap(rightmost_id,:);    %color associated with identifer of rightmost model in pairwise comparison
+                %colour sig line according to which model has the smaller BIC, if significant
+                %(code used to pick out rightmost but is repurposed, so
+                %rightmost means winning model now)
+                if sum(diffs) < 0; pair_index = 1; else; pair_index = 2; end;
+                rightmost_num = line_pair_order(pair,pair_index);    %This is an index into IC_pps_all_models, which excludes IO and Human
+%                 rightmost_id = Generate_params.study(study).model(line_pair_order(pair,2)+human_is_index).identifier;
+                rightmost_id = Generate_params.study(study).model(rightmost_num+human_is_index).identifier;
+                rightmost_color = plot_details.plot_cmap(rightmost_id,:);    %color associated with identifer of winning in pairwise comparison
                 
                 plot([line_pair_order(pair,1) line_pair_order(pair,2)],...
                     [line_y_values(pair) line_y_values(pair)],'LineWidth',.5,'Color',rightmost_color);
@@ -847,7 +859,7 @@ study = plot_details.study;
 figure(plot_details.fig)
 subplot(plot_details.rows,plot_details.cols,eval(plot_details.subplot_num));
 
-%If the BIC plot, then add faint guidelines
+%If the BIC plot, then add faint grey guidelines
 if strcmp(plot_details.fig.Name,'samples') & plot_details.panel_num == 2;
     plot([plot_details.it_model_comparison plot_details.it_model_comparison],[nanmean(plot_details.these_data) 8000],'Color',[.9 .9 .9], 'LineWidth',.25);
 end;
