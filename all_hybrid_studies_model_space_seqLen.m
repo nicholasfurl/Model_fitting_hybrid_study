@@ -1,6 +1,6 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [] = all_hybrid_studies_model_space_NEW(all_draws_set,subjective_vals, payoff_scheme, seq_cond);
+function [] = all_hybrid_studies_model_space_seqLen(all_draws_set,subjective_vals, payoff_scheme, seq_cond);
 
 %This one does the theoretical model fitting for the sequence legnth study. See
 %all_hybrid_studies_model_space_NEW.m or all_hybrid_studies_model_space.m

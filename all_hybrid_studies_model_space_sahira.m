@@ -1,6 +1,6 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [] = all_hybrid_studies_model_space_NEW(all_draws_set,subjective_vals, payoff_scheme, study);
+function [] = all_hybrid_studies_model_space_sahira(all_draws_set,subjective_vals, payoff_scheme, study);
 
 %I originally wrote all_hybrid_studies_model_space.m to work with the NEW
 %study (N=150, seq length 12). Now I'm splitting this code so one version,
@@ -21,7 +21,7 @@ tic
 all_draws_set = 1;          %You can toggle how the ll is computed here for all models at once if you want or go below and set different values for different models manually in structure
 subjective_vals = 0;        %Run models using subjective values (ratings) or objective values (prices)?
 payoff_scheme = 2;          %1 means continuous reward, 2 means 3-rank (5:3:1), 3 means 3-rank in Sahira's monetary proportion
-study = 8;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing 8:payoff
+study = 3;  %1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing 8:payoff
 
 %What model fitting / viz steps should the programme run?
 check_params = 1;       %fit the same model that created the data and output estimated parameters
@@ -33,14 +33,14 @@ do_io = 1;  %If a 1, will add io performance as a final model field when make_es
 
 %What kinds of models / fits should be run?
 %1: cutoff 2: Cs 3: IO (beta only) 4: BV 5: BR 6: BPM 7: Opt 8: BPV
-do_models = [1 2 7 4 5];    %These are now what v2 called model identifiers - Applies at the moment to both make_model_data and check_params;
-% do_models = [1 ];    %These are now what v2 called model identifiers - Applies at the moment to both make_model_data and check_params;
+% do_models = [1 2 7 4 5];    %These are now what v2 called model identifiers - Applies at the moment to both make_model_data and check_params;
+do_models = [1 ];    %These are now what v2 called model identifiers - Applies at the moment to both make_model_data and check_params;
 IC = 2; %1 if AIC, 2 if BIC
 log_or_not = 0; %obsolete
 
 %File I/O
 if use_file_for_plots ~=1;
-    comment = sprintf('out_sahira_noIO_ll%dpay%dvals%dstudy%d',all_draws_set,payoff_scheme,subjective_vals,study);     %The filename will already fill in basic parameters so only use special info for this.
+    comment = sprintf('out_sahira_fixranks_ll%dpay%dvals%dstudy%d',all_draws_set,payoff_scheme,subjective_vals,study);     %The filename will already fill in basic parameters so only use special info for this.
     %     comment = 'test';
 end;
 outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\outputs';
@@ -1236,7 +1236,7 @@ if option_chars ~= 2;   %if not full pilot (which already is in doubles for some
 end;    %if not full pilot and so requires formatting
 
 %Time to loop through and process subs and sequences with models
-subs = unique(sequence_data_concatenated.ParticipantPrivateID);
+subs = unique(sequence_data_concatenated.ParticipantPrivateID,'stable');    %make sure sub numbers have same order as in all_output!!!!!!
 num_subs = numel(subs);
 for subject = 1:num_subs
     
@@ -1246,7 +1246,8 @@ for subject = 1:num_subs
     %Get objective values for this subject
     array_Obj = table2array(sequence_data_concatenated(sequence_data_concatenated.ParticipantPrivateID==subs(subject),5:end));
     
-    %loop through and get io peformance for each sequence
+    %loop through and set up sequence value arrays for model fitting (i.e.,
+    %normalise them and transform to subjective values if needed)
     for sequence = 1:size(array_Obj,1);
         
         if subjective_vals == 1;   %if subjective values
