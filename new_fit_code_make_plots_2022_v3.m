@@ -143,7 +143,9 @@ outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitti
 % filename_for_plots = [outpath filesep 'out_sahira_noIO_ll1pay3vals0study320231707.mat']; %Unfortunately still needs to be typed in manually
 % filename_for_plots = [outpath filesep 'out_sahira_noIO_ll1pay3vals0study620231807.mat']; %Unfortunately still needs to be typed in manually
 % filename_for_plots = [outpath filesep 'out_sahira_noIO_ll1pay3vals0study720231807.mat']; %Unfortunately still needs to be typed in manually
-filename_for_plots = [outpath filesep 'out_sahira_noIO_ll1pay2vals0study820231807.mat']; %Unfortunately still needs to be typed in manually
+% filename_for_plots = [outpath filesep 'out_sahira_noIO_ll1pay2vals0study820231807.mat']; %Unfortunately still needs to be typed in manually
+
+filename_for_plots = [outpath filesep 'out_sahira_newModelsLastDraw_pay1vals0study220242502.mat']; %Unfortunately still needs to be typed in manually
 
 
 %These correspond to identifiers (not configured implementations like in v2) in the v3_sweep version
