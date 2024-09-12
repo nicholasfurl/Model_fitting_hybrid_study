@@ -30,22 +30,10 @@ addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model
 %Numbers mean where I want a certain model index to appear in new array. So
 %putting a 6 first mean the first model in the input struct will be optimal
 %zero means participants.
-%bar_order = [6 0 2 1 3 4 5];
-% bar_order = [6 0 1 2 4 5 3];    %to match hybrid_paper_parameter_recovery.m
-% bar_order = [5 0 1 2 4 3];    %to match hybrid_paper_parameter_recovery.m
 bar_order = [4 0 1 2 3];
 
 %Master control switch! Which figure do I want to make! 
-figure_num = 5;
-
-% h = figure('Color',[1 1 1]);
-
-%For now, the models that I've run and can use here (rather than all
-%possible models) are:
-%SV: 1: cutoff 2: Cs 3: BV 4: BR 5: Opt 6: io
-%OV: 7: cutoff 8: Cs 9: BV 10: BR 11: Opt 12: io
-% do_models = [2 5 7 10];
-% do_models = [1:5 7:11];    %So SV and OV will be same models each, skip io
+figure_num = 6;
 
 %output file name decoder:
 %study1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing 8:payoff
@@ -72,33 +60,6 @@ file_paths = {...
     [outpath filesep 'out_SeqLen_COCSBPM_pay1vals1seqcond220240603.mat']   %seqLen, SV, payoff 1 (continuous), 14 options
     [outpath filesep 'out_SeqLen_COCSBPM_pay1vals0seqcond220240603.mat']   %seqLen, OV, payoff 1 (continuous), 14 options
     };
-
-%     [outpath filesep 'out_sahira_COCSOpt_pay3vals0study120242802.mat']    %pilot baseline, OV, payoff 3 (sahira's proportions), study 1
-%     [outpath filesep 'out_sahira_COCSOpt_pay1vals1study220242802.mat']    %pilot full phase, SV, payoff 1 (continuous), study 2
-%     [outpath filesep 'out_sahira_COCSOpt_pay1vals0study220242802.mat']    %pilot full, OV, payoff 1 (continuous), study 2
-%     [outpath filesep 'out_sahira_COCSOpt_pay3vals1study520242902.mat']    %ratings phase, SV, payoff 3 (sahira's proportions), study 5
-%     [outpath filesep 'out_sahira_COCSOpt_pay3vals0study520242902.mat']    %ratings phase, OV, payoff 3 (sahira's proportions), study 5
-%     [outpath filesep 'out_sahira_COCSOpt_pay1vals1study420242902.mat']    %full, SV, payoff 1 (continuous), study 4
-%     [outpath filesep 'out_sahira_COCSOpt_pay1vals0study420242902.mat']    %full, OV, payoff 1 (continuous), study 4
-%     [outpath filesep 'out_sahira_COCSOpt_pay3vals0study320242902.mat']    %baseline, OV. payoff 3 (sahira's proportions), study 3
-%     [outpath filesep 'out_sahira_COCSOpt_pay3vals0study620240103.mat']    %squares, OV, payoff 3 (sahira's proportions), study 6
-%     [outpath filesep 'out_sahira_COCSOpt_pay3vals0study720240103.mat']    %timing, OV, payoff 3 (sahira's proportions), study 7
-%     [outpath filesep 'out_sahira_COCSOpt_pay2vals0study820240103.mat']    %payoff, OV, payoff 2 (5/3/1 proportion), study 8
-%     [outpath filesep 'out_NEW_COCSOpt_pay1vals1study20240103.mat']                  %NEW, SV, payoff 1 (continuous)
-%     [outpath filesep 'out_NEW_COCSOpt_pay1vals0study20240103.mat']                  %NEW, OV, payoff 1 (continuous)
-%     [outpath filesep 'out_SeqLen_COCSOpt_pay1vals1seqcond120240103.mat']    %seqLen, SV, payoff 1 (continuous), 10 options
-%     [outpath filesep 'out_SeqLen_COCSOpt_pay1vals0seqcond120240203.mat']    %seqLen, OV, payoff 1 (continuous), 10 options
-%     [outpath filesep 'out_SeqLen_COCSOpt_pay1vals1seqcond220240203.mat']   %seqLen, SV, payoff 1 (continuous), 14 options
-%     [outpath filesep 'out_SeqLen_COCSOpt_pay1vals0seqcond220240203.mat']   %seqLen, OV, payoff 1 (continuous), 14 options
-
-% %This is really COCSBPM but is mislabelled
-% [outpath filesep 'out_sahira_COCSOpt_pay3vals0study120242702.mat']    %pilot baseline, OV, payoff 3 (sahira's proportions), study 1
-% [outpath filesep 'out_sahira_COCSOpt_pay1vals1study220242702.mat']    %pilot full phase, SV, payoff 1 (continuous), study 2
-% [outpath filesep 'out_sahira_COCSOpt_pay1vals0study220242702.mat']    %pilot full, OV, payoff 1 (continuous), study 2
-
-% [outpath filesep 'out_sahira_COCSBPMOpt_pay3vals0study120242602.mat']    %pilot baseline, OV, payoff 3 (sahira's proportions), study 1
-% [outpath filesep 'out_sahira_COCSBPMOpt_pay1vals1study220242602.mat']    %pilot full phase, SV, payoff 1 (continuous), study 2
-% [outpath filesep 'out_sahira_COCSBPMOpt_pay1vals0study220242602.mat']    %pilot full, OV, payoff 1 (continuous), study 2
 
 study_names = {...
     'Pilot baseline'
