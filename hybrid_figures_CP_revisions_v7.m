@@ -36,7 +36,7 @@ addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model
 bar_order = [4 0 1 2 3];
 
 %Master control switch! Which figure do I want to make! 
-figure_num = 5;
+figure_num = 6;
 
 %output file name decoder:
 %study1: baseline pilot, 2: full pilot, 3: baseline, 4: full, 5: ratings phase, 6: squares 7: timing 8:payoff

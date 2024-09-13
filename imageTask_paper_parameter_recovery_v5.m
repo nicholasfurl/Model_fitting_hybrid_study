@@ -35,9 +35,11 @@ do_models = [2 1 6 4 5];    %These are now what v2 called model identifiers - Ap
 % do_models = [6];    %These are now what v2 called model identifiers - Applies at the moment to both make_model_data and check_params;
 
 comment = 'hybrid_COCSBPMBVBR';    %The filename will already fill in basic parameters so only use special info for this.
-outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_imageTasks\outputs';
+% outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_imageTasks\outputs';
+outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\outputs';
 %If you want to plot results of a previously run recover, turn simulate_stimuli, make config .. and check_params to 0 and enter desired results filename here
-filename_for_plots = [outpath filesep 'out_PR_60models5modelTypes12paramLevels1betaLevels20subs5seqs8opts_hybrid_COCSBPMBVBR_20242503.mat'];
+% filename_for_plots = [outpath filesep 'out_PR_60models5modelTypes12paramLevels1betaLevels20subs5seqs8opts_hybrid_COCSBPMBVBR_20242503.mat'];
+filename_for_plots = [outpath filesep 'out_PR_60models5modelTypes12paramLevels1betaLevels25subs5seqs12opts_hybrid_COCSBPMBVBR_20241103.mat'];
 num_param_levels = 12;   %Will use start values and increments specified below to run up to this many parameters for each model
 fit_betas = [1];
 num_fit_betas = numel(fit_betas);
