@@ -20,7 +20,7 @@ function [] = all_hybrid_studies_model_space_sahira_v3(subjective_vals, payoff_s
 
 tic
 
-addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_imageTasks\FMINSEARCHBND'));
+addpath(genpath('C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\FMINSEARCHBND'));
 
 %input argument defaults
 if ~exist("subjective_vals","var"); %if arguments have not been specified in a function call
