@@ -23,12 +23,14 @@ IC = 1; %1 if AIC, 2 if BIC
 no_params = [8 3]; %Used for IC correction
 % model_strs = {'Independent threshold model' 'Linear threshold model'};
 
-outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\outputs';
+outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\outputs';  
 file_paths = {...
-    [outpath filesep 'out_NEW_COCSBPM_pay1vals0study20240503.mat']                  %NEW, OV, payoff 1 (continuous)
+        [outpath filesep 'out_NEW_COCSBPM_pay1vals0study20243110.mat']                  %NEW, OV, payoff 1 (continuous)
     };
+%  [outpath filesep 'out_sahira_COCSBPM_pay3vals0study320240303.mat']                  %Study 1 baseline
+% [outpath filesep 'out_NEW_COCSBPM_pay1vals1study20240503.mat']    %NEW, SV, payoff 1 (continuous)
+%    
 
-[outpath filesep 'out_NEW_COCSBPM_pay1vals1study20240503.mat']    %NEW, SV, payoff 1 (continuous)
 
 data = load(file_paths{1});
 data.Generate_params.model(4) = []; %remove optimal

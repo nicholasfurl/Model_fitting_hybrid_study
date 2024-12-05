@@ -41,6 +41,8 @@ p.addParameter('scale',sqrt(2)/2);
 p.addParameter('stats',[],@isstruct);
 p.parse(parms{:});
 
+scale = p.Results.scale;
+
 if isempty(p.Results.stats)
     % Calculate frequentist from the X and Y data
     tail = p.Results.tail;
@@ -58,5 +60,5 @@ else
     statsForBf = p.Results.stats;
 end
 
-bf10 = bf.ttest('stats',statsForBf);
+bf10 = bf.ttest('stats',statsForBf,'scale',scale);
 end

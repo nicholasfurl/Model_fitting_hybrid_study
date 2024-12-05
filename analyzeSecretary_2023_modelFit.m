@@ -6,7 +6,7 @@ function [choiceStop, choiceCont, difVal] = analyzeSecretary_2023_modelFit(Gener
 %This is for use with hybrid model fitting code (i.e., model space) for sahira, NEW and seqLen
 
 N = Generate_params.seq_length;
-Cs = Generate_params.model(Generate_params.current_model).Cs;      %Will already be set to zero unless Cs model
+Cs = Generate_params.model(Generate_params.current_model).Cs/100;      %Will already be set to zero unless Cs model
 distOptions = 0;
 minValue = Generate_params.payoff_scheme; %minValue is repurposed to be 1 if continuous reward and otherwise if 3-rank payoff
 
@@ -38,6 +38,10 @@ if Generate_params.model(Generate_params.current_model).identifier == 4;   %If i
 end;
 
 [choiceStop, choiceCont, difVal, currentRnk] = computeSecretary(sampleSeries, prior, N, Cs, distOptions,minValue,Generate_params);
+if sum(choiceStop>100) | sum(choiceCont>100);
+    fprintf('');
+end;
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -80,6 +84,7 @@ for ts = 1 : Nconsider
     currentRnk(ts) = z;
 
 end
+fprintf('');
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -150,6 +155,12 @@ else;
 
 end;
 
+%normalise between zero and 1 (ensures small action values that behave well in softmax)
+if all(payoff == payoff(1));
+    payoff = payoff/100;
+else;
+    payoff = (payoff - min(payoff))/(max(payoff)-min(payoff));
+end;
 
 N = listLength;
 Nx = length(x);

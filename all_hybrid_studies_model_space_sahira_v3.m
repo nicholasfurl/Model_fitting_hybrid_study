@@ -224,7 +224,7 @@ if check_params == 1;
     fitting_bounds.BPM = [-100 100];  %biased prior, value can't exit the rating scale
     fitting_bounds.Opt = [-100 100];  %optimism, value can't exit rating scale
     fitting_bounds.BPV = [-100 100];  %biased variances, can't be wider than the whole rating scale
-    fitting_bounds.beta = [0 200];
+    fitting_bounds.beta = [0 100];
 
     %In the previous section, we only assigned to the Generate_param
     %struct the models that were in the do_models in that section. So
@@ -606,7 +606,7 @@ elseif study == 6;  %squares
     data_folder = 'squares';
 elseif study == 7;  %timimg
     data_folder = 'timing';
-elseif study == 8;  %timimg
+elseif study == 8;  %payoff
     data_folder = 'payoff';
 end;
 

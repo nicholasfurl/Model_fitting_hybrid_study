@@ -1,0 +1,17 @@
+Condition 1,Condition 2,n,BF10 0.50,BF10 0.71,BF10 1.00,t test,Cohen's d,Lilliefors
+Study 1 baseline,,,,,,,,
+Biased prior obj,Cut off obj,50,4.49669E+13,5.87527E+13,7.22256E+13,t(49) = -12.39 p = 0.00,-1.75,"D = 0.08, p = 1.00"
+Biased prior obj,Cost to sample obj,50,2210.32,2274.05,2106.12,t(49) = -4.98 p = 0.00,-0.7,"D = 0.08, p = 1.00"
+Cut off obj,Cost to sample obj,50,271916568.1,330727004.5,367182642.4,t(49) = 8.54 p = 0.00,1.21,"D = 0.06, p = 1.00"
+Study 1 squares,,,,,,,,
+Biased prior obj,Cut off obj,50,95431017.88,114979305.9,126119418.1,t(49) = -8.22 p = 0.00,-1.16,"D = 0.06, p = 1.00"
+Biased prior obj,Cost to sample obj,50,5716076.16,6687585.35,7076921.59,t(49) = -7.38 p = 0.00,-1.04,"D = 0.12, p = 0.20"
+Cut off obj,Cost to sample obj,50,19169.13,20617.78,19921.81,t(49) = 5.66 p = 0.00,0.8,"D = 0.08, p = 1.00"
+Study 1 timing,,,,,,,,
+Biased prior obj,Cut off obj,50,112017475.8,135165063.1,148541703.8,t(49) = -8.27 p = 0.00,-1.17,"D = 0.09, p = 1.00"
+Biased prior obj,Cost to sample obj,50,287.14,280.73,248.58,t(49) = -4.30 p = 0.00,-0.61,"D = 0.12, p = 0.21"
+Cut off obj,Cost to sample obj,50,40494.99,44146.54,43238.56,t(49) = 5.89 p = 0.00,0.83,"D = 0.08, p = 1.00"
+Study 1 payoff,,,,,,,,
+Biased prior obj,Cut off obj,51,1.86118E+13,2.41654E+13,2.94173E+13,t(50) = -11.99 p = 0.00,-1.68,"D = 0.10, p = 0.57"
+Biased prior obj,Cost to sample obj,51,182.18,175.26,153.07,t(50) = -4.14 p = 0.00,-0.58,"D = 0.14, p = 0.05"
+Cut off obj,Cost to sample obj,51,97694154.93,117314933.2,128128496,t(50) = 8.19 p = 0.00,1.15,"D = 0.13, p = 0.09"

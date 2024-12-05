@@ -1,0 +1,2 @@
+Condition 1,n1,Condition 2,n2,BF10 0.50,BF10 0.71,BF10 1.00,t test,Cohen's d,ci_lower,ci_upper,Brown-Forsythe
+14 options,65,10 options,75,1.55,1.29,1.01,"t(138) = 2.08, p = 0.04",0.35,0.03,1.33,"F(1,138) = 3.55, p = 0.06"

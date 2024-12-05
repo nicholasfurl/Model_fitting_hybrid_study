@@ -45,7 +45,7 @@ do_models =  [2 1 6];    %These are now what v2 called model identifiers - Appli
 
 %File I/O
 if use_file ~=1;
-    comment = sprintf('out_NEW_COCSBPM_pay%dvals%dstudy%d',payoff_scheme,subjective_vals);     %The filename will already fill in basic parameters so only use special info for this.
+   comment = sprintf('out_NEW_COCSBPM_pay%dvals%dstudy%d',payoff_scheme,subjective_vals);     %The filename will already fill in basic parameters so only use special info for this.
 end;
 outpath = 'C:\matlab_files\fiance\parameter_recovery\beta_fixed_code\Model_fitting_hybrid_study\outputs';
 
@@ -425,11 +425,11 @@ for seq = 1:Generate_params.num_seqs;
     
     %Need to limit the sequence by the "subject's" (configured simulation's)
     %number of draws ...
-    
+
     %How many samples for this sequence and subject
     listDraws = ...
         Generate_params.num_samples(seq,Generate_params.num_subs_to_run);
-    
+
     %Loop through trials to be modelled to get choice probabilities for
     %each action value
     for drawi = 1 : listDraws
@@ -444,7 +444,14 @@ for seq = 1:Generate_params.num_seqs;
         ll = ll - sum(log(cprob((1:listDraws-1), 1))) - log(cprob(listDraws, 2));
     end;
 
+    if sum(sum(isnan(cprob))) > 0;
+        fprintf('');
+        ll = Inf;
+    end;
+
 end;    %seq loop
+
+
 
 
 
@@ -470,6 +477,10 @@ for num_subs_found = Generate_params.num_subs_to_run;
 
         %just one sequence
         list.vals = squeeze(Generate_params.seq_vals(sequence,:,num_subs_found));
+
+        if sum(list.vals) == 0; 
+            fprintf('');
+        end;
 
         %get prior dist moments
         Generate_params.PriorMean = mean(Generate_params.ratings(:,num_subs_found));
@@ -509,7 +520,7 @@ for num_subs_found = Generate_params.num_subs_to_run;
             cprob(drawi, :) = exp(b*choiceValues(drawi, :))./sum(exp(b*choiceValues(drawi, :)));
         end;
         
-        cprob(end,2) = Inf; %ensure stop choice on final sample.
+        cprob(end,2) = 1; %ensure stop choice on final sample.
         
         %Now get samples from uniform distribution
         test = rand(1000,Generate_params.seq_length);
